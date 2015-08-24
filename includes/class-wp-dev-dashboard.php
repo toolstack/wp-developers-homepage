@@ -160,6 +160,11 @@ class WP_Dev_Dashboard {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp-dev-dashboard-admin.php';
 
 		/**
+		 * The class responsible for defining the plugins custom WP_List_Table extender class..
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp-dev-dashboard-list-table.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
@@ -215,7 +220,7 @@ class WP_Dev_Dashboard {
 		// Add metabox trigger script.
 		$this->loader->add_action( 'admin_footer-toplevel_page_' . $this->slug, $plugin_admin, 'print_metabox_trigger_scripts' );
 
-		$this->loader->add_action( 'wp_ajax_refresh_wpdd', $plugin_admin, 'get_ajax_meta_boxes' );
+		$this->loader->add_action( 'wp_ajax_refresh_wpdd', $plugin_admin, 'get_ajax_content' );
 
 	}
 

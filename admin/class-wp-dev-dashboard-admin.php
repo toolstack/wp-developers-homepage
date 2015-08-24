@@ -86,6 +86,25 @@ class WP_Dev_Dashboard_Admin {
 	private $screen_id;
 
 	/**
+	 * Fields to fetch via the plugin/theme APIs.
+	 *
+	 * @since    1.2.0
+	 * @access   private
+	 * @var      string    $api_fields    Fields to fetch via the plugin/theme APIs
+	 */
+	private $api_fields = array(
+		'active_installs' => true,
+		'compatibility'   => false,
+		'description'     => false,
+		'downloaded'      => true,
+		'homepage'        => false,
+		'icons'           => false,
+		'last_updated'    => false,
+		'num_ratings'     => false,
+		'ratings'         => false,
+	);
+
+	/**
 	 * The instance of this class.
 	 *
 	 * @since    1.0.0
@@ -99,7 +118,7 @@ class WP_Dev_Dashboard_Admin {
      *
      * @return    WP_Dev_Dashboard_Admin    A single instance of this class.
      */
-    public static function get_instance( $plugin ) {
+    public static function get_instance( $plugin = null ) {
 
         if ( null == self::$instance ) {
             self::$instance = new self( $plugin );
@@ -205,11 +224,6 @@ class WP_Dev_Dashboard_Admin {
 		// Check force refresh param passed via Ajax.
 		$force_refresh = isset( $_POST['force_refresh'] ) ? true : false;
 
-		// Set up refresh button atts.
-		$refresh_button_atts = array(
-			'href'  => '',
-		);
-
 		?>
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
@@ -230,23 +244,12 @@ class WP_Dev_Dashboard_Admin {
 
 					if ( $is_secondary_tab ) {
 
-						// Output refresh button.
-						if ( $is_secondary_tab ) {
-							submit_button( esc_attr__( 'Refresh List', 'wp-dev-dashboard' ), 'button button-refresh', '', false, $refresh_button_atts );
-							echo '<span class="spinner"></span>';
-						}
-
+						// Do main metabox/table output.
 						$this->do_ajax_container( 'tickets', $active_tab );
-						$this->output_settings_fields( true );
+
 					} else {
 						$this->output_settings_fields();
 						submit_button( '', 'primary', '', false );
-					}
-
-					// Output refresh button.
-					if ( $is_secondary_tab ) {
-						submit_button( esc_attr__( 'Refresh List', 'wp-dev-dashboard' ), 'button button-refresh', '', false, $refresh_button_atts );
-						echo '<span class="spinner"></span>';
 					}
 
 					?>
@@ -385,6 +388,25 @@ class WP_Dev_Dashboard_Admin {
 
 	}
 
+	/**
+	 * Output refresh button.
+	 *
+	 * @since 1.0.0
+	 */
+	public function do_refresh_button() {
+
+		// Set up refresh button atts.
+		$refresh_button_atts = array(
+			'href'  => '',
+		);
+		?>
+		<div class="wpdd-refresh-button-container">
+			<?php submit_button( esc_attr__( 'Refresh List', 'wp-dev-dashboard' ), 'button wpdd-button-refresh', '', false, $refresh_button_atts ); ?><span class="spinner"></span>
+		</div>
+		<?php
+
+	}
+
 	public function do_ajax_container( $object_type = 'tickets', $ticket_type = 'plugins' ) {
 		printf( '<div class="wpdd-ajax-container" data-wpdd-object-type="%s" data-wpdd-ticket-type="%s"><div class="wpdd-loading-div"><span class="spinner is-active"></span> <span>%s</span></div></div>', $object_type, $ticket_type, $this->js_data['fetch_messages'][ array_rand( $this->js_data['fetch_messages'] ) ] );
 	}
@@ -413,16 +435,41 @@ class WP_Dev_Dashboard_Admin {
 	}
 
 	/**
-	 * Helper function to update ticket metaboxes via Ajax.
+	 * Helper function to update ticket/stats content via Ajax.
 	 *
 	 * @since 1.0.0
 	 */
-	public function get_ajax_meta_boxes() {
+	public function get_ajax_content() {
 
+		/**
+		 * Include necessary global: hook_suffix. For some reason this
+		 * doesn't work by default and must be included manually to
+		 * avoid throwing a notice.
+		 */
+		global $hook_suffix;
+
+		// Get paramters to load correct content.
 		$ticket_type = isset( $_POST['ticket_type'] ) ? $_POST['ticket_type'] : 'plugins';
 		$force_refresh = isset( $_POST['force_refresh'] ) ? $_POST['force_refresh'] : false;
+		$current_url = isset( $_POST['current_url'] ) ? $_POST['current_url'] : false;
 
-		$this->do_meta_boxes( $ticket_type, $force_refresh );
+		// Output refresh button.
+		$this->do_refresh_button();
+
+		?>
+		<div class="wpdd-sub-tab-nav nav-tab-wrapper">
+        	<a href="#" class="button button-primary" data-wpdd-tab-target="tickets"><span class="dashicons dashicons-editor-help"></span> <?php echo __( 'Tickets', 'wp-dev-dashboard '); ?></a>
+        	<a href="#" class="button" data-wpdd-tab-target="info"><span class="dashicons dashicons-list-view" data-wpdd-tab-target="info"></span> <?php echo __( 'Statistics', 'wp-dev-dashboard '); ?></a>
+        </div>
+        <div class="wpdd-sub-tab-container">
+        	<div class="wppd-sub-tab wpdd-sub-tab-tickets active"><?php $this->do_meta_boxes( $ticket_type, $force_refresh ); ?></div>
+        	<div class="wppd-sub-tab wpdd-sub-tab-info"><?php $this->output_list_table( $ticket_type, $current_url ); ?></div>
+        </div>
+        <?php
+
+        // Output refresh button.
+		$this->do_refresh_button();
+
 		wp_die(); // this is required to terminate immediately and return a proper response
 
 	}
@@ -437,47 +484,7 @@ class WP_Dev_Dashboard_Admin {
 	 */
 	public function add_ticket_metaboxes( $ticket_type = 'plugins', $force_refresh = false ) {
 
-		// Get username to pull plugin data.
-		$username = $this->options['username'];
-
-		// Set transient slug for this specific username and plugin/theme slugs.
-		$transient_slug = $ticket_type;
-
-		// Append username to transient.
-		if ( $username ) {
-			$transient_slug .= "-{$username}";
-		}
-
-		// Append plugin slugs to transient.
-		if ( 'plugins' == $ticket_type && ! empty( $this->options['plugin_slugs'] ) ) {
-			$transient_slug .= '-' . $this->options['plugin_slugs'];
-		}
-
-		// Append theme slugs to transient.
-		if ( 'themes' == $ticket_type && ! empty( $this->options['theme_slugs'] ) ) {
-			$transient_slug .= '-' . $this->options['theme_slugs'];
-		}
-
-		$transient_slug = 'wpdd-' . md5( $transient_slug );
-
-		if ( $force_refresh || false === ( $plugins_themes = get_transient( $transient_slug ) ) ) {
-
-			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
-
-			if ( $plugins_themes ) {
-
-				/**
-				 * Filter transient expiration time.
-				 *
-				 * @since 1.0.0
-				 *
-				 * @param $expiration Expiration in seconds (default 3600 - one hour).
-				 */
-				$transient_expiration = apply_filters( 'wpdd_transient_expiration', HOUR_IN_SECONDS );
-				set_transient( $transient_slug, $plugins_themes, $transient_expiration );
-			}
-
-		}
+		$plugins_themes = $this->get_plugins_themes( $ticket_type, $force_refresh );
 
 		// Omit resolved tickets per admin setting.
 		if ( empty ( $this->options['show_all_tickets'] ) ) {
@@ -521,24 +528,12 @@ class WP_Dev_Dashboard_Admin {
 
 			$tickets_data = $plugin_theme->tickets_data;
 
-			// Get count of unresolved tickets.
-			$resolved_count = $unresolved_count = 0;
-			foreach ( $tickets_data as $ticket_data ) {
-
-				if ( 'unresolved' == $ticket_data['status'] ) {
-					$unresolved_count++;
-				} else {
-					$resolved_count++;
-				}
-
-			}
-
 			// Generate icon/count for unresolved tickets.
-			$ticket_html = sprintf( '<span class="dashicons dashicons-editor-help wpdd-unresolved" title="%s"></span> %d', __( 'Unresolved', 'wp-dev-dashboard' ), $unresolved_count );
+			$ticket_html = sprintf( '<span class="dashicons dashicons-editor-help wpdd-unresolved" title="%s"></span> %d', __( 'Unresolved', 'wp-dev-dashboard' ), $plugin_theme->unresolved_count );
 
 			// Generate icon/count for resolved tickets if need be.
 			if ( ! empty( $this->options['show_all_tickets'] ) ) {
-				$ticket_html .= sprintf( ' <span class="dashicons dashicons-yes wpdd-resolved" title="%s"></span> %d', __( 'Resolved', 'wp-dev-dashboard' ), $resolved_count );
+				$ticket_html .= sprintf( ' <span class="dashicons dashicons-yes wpdd-resolved" title="%s"></span> %d', __( 'Resolved', 'wp-dev-dashboard' ), $plugin_theme->resolved_count );
 			}
 
 			$title = "{$plugin_theme->name} <span class='wpdd-ticket-count'>{$ticket_html}</span>";
@@ -557,6 +552,86 @@ class WP_Dev_Dashboard_Admin {
 			);
 
 		}
+
+	}
+
+	/**
+	 * Get all plugin or theme data based on the plugin settings.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $ticket_type   Plugins or themes.
+	 * @param bool   $force_refresh Whether or not to force cache-busting refresh.
+	 *
+	 * @return array Array of all plugin|theme data.
+	 */
+	public function get_plugins_themes( $ticket_type = 'plugins', $force_refresh = false ) {
+
+		// Get username to pull plugin data.
+		$username = ! empty( $this->options['username'] ) ? $this->options['username'] : '';
+
+		// Set transient slug for this specific username and plugin/theme slugs.
+		$transient_slug = $ticket_type;
+
+		// Append username to transient.
+		if ( $username ) {
+			$transient_slug .= "-{$username}";
+		}
+
+		// Append plugin slugs to transient.
+		if ( 'plugins' == $ticket_type && ! empty( $this->options['plugin_slugs'] ) ) {
+			$transient_slug .= '-' . $this->options['plugin_slugs'];
+		}
+
+		// Append theme slugs to transient.
+		if ( 'themes' == $ticket_type && ! empty( $this->options['theme_slugs'] ) ) {
+			$transient_slug .= '-' . $this->options['theme_slugs'];
+		}
+
+		$transient_slug = 'wpdd-' . md5( $transient_slug );
+
+		if ( $force_refresh || false === ( $plugins_themes = get_transient( $transient_slug ) ) ) {
+
+			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
+
+			if ( $plugins_themes ) {
+
+				/**
+				 * Filter transient expiration time.
+				 *
+				 * @since 1.0.0
+				 *
+				 * @param $expiration Expiration in seconds (default 3600 - one hour).
+				 */
+				$transient_expiration = apply_filters( 'wpdd_transient_expiration', HOUR_IN_SECONDS );
+				set_transient( $transient_slug, $plugins_themes, $transient_expiration );
+			}
+
+		}
+
+		return $plugins_themes;
+
+	}
+
+	/**
+	 * Output a list table of plugins/themes.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $table_type Type of table to output (plugins|themes)
+	 */
+	public function output_list_table( $table_type = 'plugins', $current_url = null ) {
+
+		/**
+		 * Include necessary global: hook_suffix. For some reason this
+		 * doesn't work by default and must be included manually to
+		 * avoid throwing a notice.
+		 */
+		global $hook_suffix;
+
+		$list_table = new WPDD_List_Table( $table_type, $hook_suffix, $current_url );
+		$list_table->prepare_items();
+  		$list_table->display();
 
 	}
 
@@ -584,6 +659,10 @@ class WP_Dev_Dashboard_Admin {
 		// Loop through all plugins.
 		foreach ( $plugins_themes as $index => $plugins_theme ) {
 
+			// Initialize ticket count to zero in case we have to return early.
+			$plugins_themes[ $index ]->unresolved_count = 0;
+			$plugins_themes[ $index ]->resolved_count = 0;
+
 			$tickets_data = $this->get_unresolved_tickets( $plugins_theme->slug, $ticket_type );
 
 			if ( ! $tickets_data ) {
@@ -591,6 +670,17 @@ class WP_Dev_Dashboard_Admin {
 			}
 
 			$plugins_themes[ $index ]->tickets_data = $tickets_data;
+
+			// Add ticket counts.
+			foreach ( $tickets_data as $ticket_data ) {
+
+				if ( 'unresolved' == $ticket_data['status'] ) {
+					$plugins_themes[ $index ]->unresolved_count++;
+				} else {
+					$plugins_themes[ $index ]->resolved_count++;
+				}
+
+			}
 
 		}
 
@@ -738,19 +828,7 @@ class WP_Dev_Dashboard_Admin {
 
 		$args = array(
 			'author' => $this->options['username'],
-			'fields' => array(
-				'author'          => false,
-				'active_installs' => false,
-				'banners'         => false,
-				'compatibility'   => false,
-				'description'     => false,
-				'downloaded'      => false,
-				'homepage'        => false,
-				'icons'           => false,
-				'last_updated'    => false,
-				'num_ratings'     => false,
-				'ratings'         => false,
-			),
+			'fields' => $this->api_fields,
 		);
 
 		$data = call_user_func( $query_function, $query_action, $args );
@@ -780,19 +858,7 @@ class WP_Dev_Dashboard_Admin {
 
 		$args = array(
 			'slug' => $slug,
-			'fields' => array(
-				'author'          => false,
-				'active_installs' => false,
-				'banners'         => false,
-				'compatibility'   => false,
-				'description'     => false,
-				'downloaded'      => false,
-				'homepage'        => false,
-				'icons'           => false,
-				'last_updated'    => false,
-				'num_ratings'     => false,
-				'ratings'         => false,
-			),
+			'fields' => $this->api_fields,
 		);
 
 		$data = call_user_func( $query_function, $query_action, $args );
