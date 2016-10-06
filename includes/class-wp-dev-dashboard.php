@@ -175,7 +175,7 @@ class WP_Dev_Dashboard {
 		 *
 		 * @see  https://github.com/sunra/php-simple-html-dom-parser
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'vendor/sunra/php-simple-html-dom-parser/Src/Sunra/PhpSimple/HtmlDomParser.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'vendor/autoload.php';
 
 		$this->loader = new WP_Dev_Dashboard_Loader();
 
