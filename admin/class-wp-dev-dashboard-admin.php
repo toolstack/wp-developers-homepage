@@ -1068,18 +1068,22 @@ class WP_Dev_Dashboard_Admin {
 		foreach ( $rows as $row ) {
 
 			// Get row attributes.
-			$link = $row->find( 'li[class=bbp-topic-title]', 0 )->find( 'a', 0 );
-			$time = $row->find( 'li[class=bbp-topic-freshness]', 0 )->find( 'a', 0 );
+			$title      = $row->find( 'li[class=bbp-topic-title]', 0 );
+			$freshness  = $row->find( 'li[class=bbp-topic-freshness]', 0 );
+			$link       = $title->find( 'a', 0 );
+			$time       = $freshness->find( 'a', 0 );
+			$startby    = $title->find( 'a[class=bbp-author-name]', 0 );
+			$lastposter = $freshness->find( 'a[class=bbp-author-name]', 0 );
 
-			$row_data['href'] = $link->href;
-			$row_data['text'] = $link->innertext;
-			$row_data['time'] = $time->innertext;
-			$row_data['status'] = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
-			$row_data['sticky'] = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
-			$row_data['closed'] = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
-			$row_data['startedby'] = $row->find( 'span[class=bbp-topic-started-by]' )->find( 'a', 0 )->innertext;
-			$row_data['lastposter'] = $row->find( 'span[class=bbp-topic-freshness-author]' )->find( 'a', 0 )->innertext;
-			$row_data['type'] = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+			$row_data['href']       = $link->href;
+			$row_data['text']       = $link->innertext;
+			$row_data['time']       = $time->innertext;
+			$row_data['status']     = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
+			$row_data['sticky']     = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
+			$row_data['closed']     = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
+			$row_data['startedby']  = $startby->innertext;
+			$row_data['lastposter'] = $lastposter->innertext;
+			$row_data['type']       = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
 
 			$rows_data[] = $row_data;
 
