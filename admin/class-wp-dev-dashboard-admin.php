@@ -384,6 +384,18 @@ class WP_Dev_Dashboard_Admin {
 			)
 		);
 
+		add_settings_field(
+			'age_limit', // ID
+			__( 'Age limit', 'wp-dev-dashboard' ), // Title
+			array( $this, 'render_text_input' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'age_limit',
+				'description' => __( 'Ignore tickets older than this number of days. 0 = unlimited.', 'wp-dev-dashboard' ),
+			)
+		);
+
 	}
 
 	public function output_settings_fields( $hidden = false ) {
@@ -495,7 +507,11 @@ class WP_Dev_Dashboard_Admin {
 			$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
 			$tickets_data = array();
 			$plugin_theme_names = array();
-
+			
+			$age_limit = ( empty( $this->options['age_limit'] ) ) ? 0 : (int)$this->options['age_limit'];
+			$ctime = time();
+			$age_limit_time = strtotime( "{$age_limit} days ago", $ctime );
+			
 			foreach( $plugins_themes as $plugin_theme ) {
 				// Skip if there are no tickets.
 				if ( empty ( $plugin_theme->tickets_data ) ) {
@@ -519,6 +535,12 @@ class WP_Dev_Dashboard_Admin {
 					}
 				}
 
+				if ( $age_limit > 0 ) {
+					if ( $ticket_data['timestamp'] < $age_limit_time ) {
+						continue;
+					}
+				}
+				
 				// Generate status icons.
 				if ( 'resolved' == $ticket_data['status'] ) {
 					$icon_class = 'yes';
