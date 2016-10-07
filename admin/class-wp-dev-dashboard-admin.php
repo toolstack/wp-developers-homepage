@@ -1077,8 +1077,8 @@ class WP_Dev_Dashboard_Admin {
 			$row_data['status'] = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
 			$row_data['sticky'] = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
 			$row_data['closed'] = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
-			$row_data['startedby'] = $row->( 'span[class=bbp-topic-started-by]' )->find( 'a', 0 )->innertext;
-			$row_data['lastposter'] = $row->( 'span[class=bbp-topic-freshness-author]' )->find( 'a', 0 )->innertext;
+			$row_data['startedby'] = $row->find( 'span[class=bbp-topic-started-by]' )->find( 'a', 0 )->innertext;
+			$row_data['lastposter'] = $row->find( 'span[class=bbp-topic-freshness-author]' )->find( 'a', 0 )->innertext;
 			$row_data['type'] = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
 
 			$rows_data[] = $row_data;
