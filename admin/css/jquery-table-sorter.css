@@ -5,10 +5,6 @@
 	background-position: center right;
 	cursor: pointer;
 }
-.tablesorter tfoot th,
-.tablesorter tfoot td {
-	border: 1px solid #eee;
-}
 .tablesorter .header,
 .tablesorter .tablesorter-header {
     background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);

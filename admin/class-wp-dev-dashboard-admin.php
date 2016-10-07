@@ -206,7 +206,7 @@ class WP_Dev_Dashboard_Admin {
 			'dashicons-hammer' // Icon
 		);
 
-		add_options_page( 
+		add_options_page(
 			$this->plugin_name, // Page title
 			esc_html__( 'Dev Dashboard', 'wp-dev-dashboard' ), // Menu title
 			'manage_options', // Capability
@@ -495,7 +495,7 @@ class WP_Dev_Dashboard_Admin {
 			$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
 			$tickets_data = array();
 			$plugin_theme_names = array();
-			
+
 			foreach( $plugins_themes as $plugin_theme ) {
 				// Skip if there are no tickets.
 				if ( empty ( $plugin_theme->tickets_data ) ) {
@@ -510,7 +510,7 @@ class WP_Dev_Dashboard_Admin {
 			uasort( $tickets_data, function( $plugin_1, $plugin_2 ) {
 				return $plugin_1['timestamp'] < $plugin_2['timestamp'];
 			});
-			
+
 			foreach ( $tickets_data as $ticket_data ) {
 
 				if ( empty ( $this->options['show_all_tickets'] ) ) {
@@ -701,7 +701,7 @@ class WP_Dev_Dashboard_Admin {
 		foreach ( $plugins_themes as $index => $plugins_theme ) {
 
 			$plugins_themes[ $index ]->type = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
-		
+
 			// Initialize ticket count to zero in case we have to return early.
 			$plugins_themes[ $index ]->unresolved_count = 0;
 			$plugins_themes[ $index ]->resolved_count = 0;
@@ -981,7 +981,7 @@ class WP_Dev_Dashboard_Admin {
 		if( is_wp_error( $html ) ) {
 			return false;
 		}
-		
+
 		$html = HtmlDomParser::str_get_html( $html );
 
 		$table = $html->find( 'li[class=bbp-body]', 0 );
