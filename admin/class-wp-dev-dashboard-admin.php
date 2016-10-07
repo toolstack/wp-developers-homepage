@@ -216,11 +216,39 @@ class WP_Dev_Dashboard_Admin {
 	 */
 	function do_settings_page() {
 
+		// Set the default tab to Plugins unless the user has selected otherwise.
+		$default_tab = isset( $this->options['themes_default_tab'] ) ? 'themes' : 'plugins';
+
+		// We're going to hide any tab that is empty, so get the list of Plugins/Themes.
+		// Only do a "quick" check of the cache here otherwise the user will have
+		// a "blank" screen while the data is fetched.
+		$plugins = $this->get_plugins_themes( 'plugins', false, true );
+		$themes  = $this->get_plugins_themes( 'themes', false, true );
+
+		// We're going to hide any tab that is empty, so setup a couple of variables to hold the style settings.
+		$plugins_tab_style = '';
+		$themes_tab_style = '';
+
+		// If there are no plugins, hide the tab and make sure the default tab .
+		if( false === $plugins ) {
+			$plugins_tab_style = ' style="display: none;"';
+			$default_tab = 'themes';
+		}
+		if( false === $themes ) {
+			$themes_tab_style = ' style="display: none;"';
+
+			// Double check to make sure if there are no plugins as well, if not, go to the settings page.
+			if ( false !== $plugins ) {
+				$default_tab = 'plugins';
+			} else {
+				$default_tab = 'settings';
+			}
+		}
+
 		// Set up tab/settings.
 		$tab_base_url = "?page={$this->plugin_slug}";
-		$active_tab = isset( $_GET[ 'tab' ] ) ? $_GET[ 'tab' ] : 'plugins';
-		$show_secondary_tabs = ! empty( $this->options['username'] ) || ! empty( $this->options['plugin_slugs'] ) || ! empty( $this->options['theme_slugs'] );
-		$is_secondary_tab = ( 'plugins' == $active_tab || 'themes' == $active_tab ) && ( $show_secondary_tabs ) ;
+		$active_tab = isset( $_GET[ 'tab' ] ) ? $_GET[ 'tab' ] : $default_tab;
+		$is_secondary_tab = ( 'plugins' == $active_tab || 'themes' == $active_tab );
 
 		// Check force refresh param passed via Ajax.
 		$force_refresh = isset( $_POST['force_refresh'] ) ? true : false;
@@ -230,10 +258,8 @@ class WP_Dev_Dashboard_Admin {
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
 	        <h1><?php echo $this->plugin_name; ?></h1><br />
 	        <h2 class="nav-tab-wrapper">
-	        	<?php if ( $show_secondary_tabs ) : ?>
-	        	<a href="<?php echo $tab_base_url; ?>&tab=plugins" class="nav-tab <?php echo $active_tab == 'plugins' ? 'nav-tab-active' : ''; ?>"><span class="dashicons dashicons-admin-plugins"></span> <?php echo __( 'Plugins', 'wp-dev-dashboard '); ?></a>
-	        	<a href="<?php echo $tab_base_url; ?>&tab=themes" class="nav-tab <?php echo $active_tab == 'themes' ? 'nav-tab-active' : ''; ?>"><span class="dashicons dashicons-admin-appearance"></span> <?php echo __( 'Themes', 'wp-dev-dashboard '); ?></a>
-	        	<?php endif; ?>
+	        	<a href="<?php echo $tab_base_url; ?>&tab=plugins" class="nav-tab <?php echo $active_tab == 'plugins' ? 'nav-tab-active' : ''; ?>"<?php echo $plugins_tab_style; ?>><span class="dashicons dashicons-admin-plugins"></span> <?php echo __( 'Plugins', 'wp-dev-dashboard '); ?></a>
+	        	<a href="<?php echo $tab_base_url; ?>&tab=themes" class="nav-tab <?php echo $active_tab == 'themes' ? 'nav-tab-active' : ''; ?>"<?php echo $themes_tab_style; ?>><span class="dashicons dashicons-admin-appearance"></span> <?php echo __( 'Themes', 'wp-dev-dashboard '); ?></a>
 	        	<a href="<?php echo $tab_base_url; ?>&tab=settings" class="nav-tab <?php echo $active_tab == 'settings' ? 'nav-tab-active' : ''; ?>"><span class="dashicons dashicons-admin-generic"></span> <?php echo __( 'Settings', 'wp-dev-dashboard '); ?></a>
 	        </h2>
 			<div id="poststuff" data-wpdd-tab="<?php echo $active_tab; ?>">
@@ -347,7 +373,19 @@ class WP_Dev_Dashboard_Admin {
 			'main-settings', // Section
 			array( // Args
 				'id' => 'show_all_tickets',
-				'description' => sprintf( '<i>%s</i>', __( '(Only unresolved tickets are shown by default.)', 'wp-dev-dashboard' ) ),
+				'description' => sprintf( '<i>%s</i>', __( '(Only unresolved tickets are shown by default)', 'wp-dev-dashboard' ) ),
+			)
+		);
+
+		add_settings_field(
+			'themes_default_tab', // ID
+			__( 'Default to the Themes tab', 'wp-dev-dashboard' ), // Title
+			array( $this, 'render_checkbox' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'themes_default_tab',
+				'description' => __( 'Make the Themes tab the default tab shown.', 'wp-dev-dashboard' ),
 			)
 		);
 
@@ -587,10 +625,11 @@ class WP_Dev_Dashboard_Admin {
 	 *
 	 * @param string $ticket_type   Plugins or themes.
 	 * @param bool   $force_refresh Whether or not to force cache-busting refresh.
+	 * @param bool   $quick         Don't refresh the data if it doesn't exist and return quickly.
 	 *
 	 * @return array Array of all plugin|theme data.
 	 */
-	public function get_plugins_themes( $ticket_type = 'plugins', $force_refresh = false ) {
+	public function get_plugins_themes( $ticket_type = 'plugins', $force_refresh = false, $quick = false ) {
 
 		// Get username to pull plugin data.
 		$username = ! empty( $this->options['username'] ) ? $this->options['username'] : '';
@@ -615,7 +654,13 @@ class WP_Dev_Dashboard_Admin {
 
 		$transient_slug = 'wpdd-' . md5( $transient_slug );
 
-		if ( $force_refresh || false === ( $plugins_themes = get_transient( $transient_slug ) ) ) {
+		$plugins_themes = get_transient( $transient_slug );
+
+		if( true === $quick ) {
+			return $plugins_themes;
+		}
+
+		if ( $force_refresh || false === $plugins_themes ) {
 
 			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
 
@@ -841,7 +886,7 @@ class WP_Dev_Dashboard_Admin {
 		}
 
 		$exclude_slugs = array();
-		
+
 		// Require file that includes plugin API functions.
 		if ( 'plugins' == $ticket_type ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
@@ -863,7 +908,7 @@ class WP_Dev_Dashboard_Admin {
 
 		// Trim all the elements in the exclusion list.
 		$exclude_slugs = array_map( 'trim', $exclude_slugs );
-		
+
 		$args = array(
 			'author' => $this->options['username'],
 			'fields' => $this->api_fields,
@@ -883,7 +928,7 @@ class WP_Dev_Dashboard_Admin {
 				unset( $plugins_themes_by_user[$key] );
 			}
 		}
-		
+
 		return $plugins_themes_by_user;
 
 	}
@@ -995,7 +1040,7 @@ class WP_Dev_Dashboard_Admin {
 		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
 
 		$html = HtmlDomParser::str_get_html( $html );
-			
+
 		$table = $html->find( 'li[class=bbp-body]', 0 );
 
 		// Return false if no table is found.
