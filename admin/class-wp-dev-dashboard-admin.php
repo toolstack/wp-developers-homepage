@@ -562,8 +562,6 @@ class WP_Dev_Dashboard_Admin {
 		$force_refresh = isset( $_POST['force_refresh'] ) ? $_POST['force_refresh'] : false;
 		$current_url = isset( $_POST['current_url'] ) ? $_POST['current_url'] : false;
 
-		$force_refresh = false;
-		
 		// Output refresh button.
 		$this->do_refresh_button();
 

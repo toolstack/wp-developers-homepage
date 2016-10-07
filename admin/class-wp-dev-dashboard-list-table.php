@@ -220,21 +220,7 @@ class WPDD_List_Table extends WP_List_Table {
 	}
 
 	function get_sortable_columns() {
-		$sortable_columns = array(
-			'name'             => array( 'name', false ),
-			'type'			   => array( 'type', false ),
-			'version'          => array( 'version', false ),
-			'tested'           => array( 'tested', false ),
-			'rating'           => array( 'rating', false ),
-			'num_ratings'      => array( 'num_ratings', false ),
-			'active_installs'  => array( 'active_installs', false ),
-			'downloaded'       => array( 'downloaded', false ),
-			'unresolved_count' => array( 'unresolved_count', false ),
-			'resolved_count'   => array( 'resolved_count', false ),
-		);
-
-return array();		
-		return $sortable_columns;
+		return array();		
 	}
 
 	function usort_reorder( $a, $b ) {
