@@ -205,7 +205,7 @@ class WPDD_List_Table extends WP_List_Table {
 					}
 				}
 
-				return sprintf( '<span class="%s">%s</span>', $class, $item->tested ? $item->rating : __( 'N/A', 'wp-dev-dashboard' ) );
+				return sprintf( '<span class="%s">%s</span>', $class, $item->tested ? $item->tested : __( 'N/A', 'wp-dev-dashboard' ) );
 			case 'rating':
 				return $item->rating ? $item->rating : __( 'N/A', 'wp-dev-dashboard' );
 			case 'active_installs':
