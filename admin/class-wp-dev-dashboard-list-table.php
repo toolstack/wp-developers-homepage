@@ -75,12 +75,6 @@ class WPDD_List_Table extends WP_List_Table {
 			'resolved_count'   => __( 'Resolved', 'wp-dev-dashboard' ),
 		);
 
-		// Remove columns that aren't returned for themes.
-		if ( 'themes' == $this->table_type ) {
-			unset( $columns['tested'] );
-			unset( $columns['active_installs'] );
-		}
-
 		return $columns;
 	}
 
@@ -185,7 +179,6 @@ class WPDD_List_Table extends WP_List_Table {
 	}
 
 	function column_default( $item, $column_name ) {
-
 		switch( $column_name ) {
 			case 'name':
 				return sprintf( '<b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $item->slug, $item->name );
@@ -227,6 +220,7 @@ class WPDD_List_Table extends WP_List_Table {
 	function get_sortable_columns() {
 		$sortable_columns = array(
 			'name'             => array( 'name', false ),
+			'type'			   => array( 'type', false ),
 			'version'          => array( 'version', false ),
 			'tested'           => array( 'tested', false ),
 			'rating'           => array( 'rating', false ),
@@ -236,6 +230,7 @@ class WPDD_List_Table extends WP_List_Table {
 			'unresolved_count' => array( 'unresolved_count', false ),
 			'resolved_count'   => array( 'resolved_count', false ),
 		);
+		
 		return $sortable_columns;
 	}
 
