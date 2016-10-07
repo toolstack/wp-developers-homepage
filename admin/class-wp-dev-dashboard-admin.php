@@ -229,20 +229,23 @@ class WP_Dev_Dashboard_Admin {
 		$plugins_tab_style = '';
 		$themes_tab_style = '';
 
-		// If there are no plugins, hide the tab and make sure the default tab .
+		// If there are no plugins, hide the tab and make sure the default tab is set to Themes.
 		if( false === $plugins ) {
 			$plugins_tab_style = ' style="display: none;"';
 			$default_tab = 'themes';
 		}
+
+		// If there are no themes, hide the tab and make sure the default tab is set to Plugins.
 		if( false === $themes ) {
 			$themes_tab_style = ' style="display: none;"';
+			$default_tab = 'plugins';
+		}
 
-			// Double check to make sure if there are no plugins as well, if not, go to the settings page.
-			if ( false !== $plugins ) {
-				$default_tab = 'plugins';
-			} else {
-				$default_tab = 'settings';
-			}
+		// If there are no themes or plugins, show the tabs and make sure the default tab is set to Settings.
+		if( false === $plugins && false === $themes ) {
+			$plugins_tab_style = '';
+			$themes_tab_style = '';
+			$default_tab = 'settings';
 		}
 
 		// Set up tab/settings.
@@ -254,7 +257,7 @@ class WP_Dev_Dashboard_Admin {
 		$force_refresh = isset( $_POST['force_refresh'] ) ? true : false;
 
 		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
-		
+
 		?>
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
@@ -676,10 +679,10 @@ class WP_Dev_Dashboard_Admin {
 
 		// Get the number of hours we should keep the transient for.
 		$timeout = (int)$this->options['refresh_timeout'];
-		
+
 		// Do some sanity checking on the timeout value.
 		if ( $timeout < 1 || $timeout > 24 ) { $timeout = 1; }
-		
+
 		if ( $force_refresh || false === $plugins_themes ) {
 
 			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
