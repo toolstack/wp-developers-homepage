@@ -4,6 +4,7 @@
 	background-repeat: no-repeat;
 	background-position: center right;
 	cursor: pointer;
+	padding-right: 20px !important; 
 }
 .tablesorter .header,
 .tablesorter .tablesorter-header {

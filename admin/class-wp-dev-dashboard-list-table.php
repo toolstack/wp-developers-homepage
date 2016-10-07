@@ -58,6 +58,8 @@ class WPDD_List_Table extends WP_List_Table {
 		    unset( $classes[ $key ] );
 		}
 
+		$classes[] = 'wdd-stats-table';
+		
 		return $classes;
 	}
 
@@ -230,7 +232,8 @@ class WPDD_List_Table extends WP_List_Table {
 			'unresolved_count' => array( 'unresolved_count', false ),
 			'resolved_count'   => array( 'resolved_count', false ),
 		);
-		
+
+return array();		
 		return $sortable_columns;
 	}
 
