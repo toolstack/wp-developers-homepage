@@ -1078,6 +1078,7 @@ class WP_Dev_Dashboard_Admin {
 			$row_data['href']       = $link->href;
 			$row_data['text']       = $link->innertext;
 			$row_data['time']       = $time->innertext;
+			$row_data['timestamp']  = strtotime( $row_data['time'] );
 			$row_data['status']     = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
 			$row_data['sticky']     = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
 			$row_data['closed']     = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
