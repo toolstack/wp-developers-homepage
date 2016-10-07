@@ -116,13 +116,26 @@
 
 		// Run Ajax request.
 		jQuery.post( ajaxurl, data, function( response ) {
-
+			var lastSortList, lastOrder;
+			
+			lastSortList = $( '#wdd_tickets_table' );
+			if( lastSortList.length > 0 ) {
+				lastOrder = lastSortList[0].config.sortList;
+			} else {
+				lastOrder = [4,1];
+			}
+			
 			$ajaxContainer.fadeTo( 'slow', 1 ).html( response );
 
 			if ( $button ) {
 				$button.val( buttonOrigText ).prop( 'disabled', false );
 				$spinner.toggleClass( 'is-active');
 			}
+
+			$( '#wdd_tickets_table' ).tablesorter({ 
+		        // sort on the date column, order dsc 
+		        sortList: [lastOrder] 
+			    }); 
 
 			// Trigger event after refresh.
 			$( document ).trigger( 'wpddRefreshAfter' );

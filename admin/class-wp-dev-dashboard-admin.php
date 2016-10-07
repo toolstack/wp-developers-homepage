@@ -172,6 +172,7 @@ class WP_Dev_Dashboard_Admin {
 	public function enqueue_styles() {
 
 		wp_enqueue_style( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'css/wp-dev-dashboard-admin.css', array(), $this->version, 'all' );
+		wp_enqueue_style( 'jquery-table-sorter-css', plugin_dir_url( __FILE__ ) . 'css/jquery-table-sorter.css', array(), $this->version, 'all' );
 
 	}
 
@@ -183,11 +184,9 @@ class WP_Dev_Dashboard_Admin {
 	public function enqueue_scripts() {
 
 		wp_enqueue_script( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'js/wp-dev-dashboard-admin.js', array( 'jquery' ), $this->version, true );
+		wp_enqueue_script( 'jquery-tablesorter-js', plugin_dir_url( __FILE__ ) . 'js/jquery.tablesorter.min.js', array( 'jquery' ), $this->version, true );
 
 		wp_localize_script( $this->plugin_slug, "wpddSettings", $this->js_data );
-
-		// Enqueue necessary scripts for metaboxes.
-		//wp_enqueue_script( 'postbox' );
 
 	}
 
@@ -480,14 +479,16 @@ class WP_Dev_Dashboard_Admin {
 	 */
 	public function do_ticket_table( $ticket_type = 'plugins', $force_refresh = false ) {
 		?>
-		<table class="widefat striped">
+		<table class="widefat striped" id="wdd_tickets_table">
 			<thead>
-				<td>Status</td>
-				<td>Title</td>
-				<td>Plugin/Theme</td>
-				<td>Type</td>
-				<td>Last Post</td>
-				<td>Last Poster</td>
+				<tr>
+					<td><?php _e( 'Status', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Title' ); ?></td>
+					<td><?php _e( 'Plugin/Theme' ); ?></td>
+					<td><?php _e( 'Type' ); ?></td>
+					<td><?php _e( 'Last Post' ); ?></td>
+					<td><?php _e( 'Last Poster' ); ?></td>
+				</tr>
 			</thead>
 			<tbody>
 		<?php
@@ -532,7 +533,7 @@ class WP_Dev_Dashboard_Admin {
 				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
 				echo '<td>' . $plugin_theme_names[$ticket_data['slug']] . '</td>' . PHP_EOL;
 				echo '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
-				echo '<td>' . date( 'g:m a M d, Y', $ticket_data['timestamp'] ) . '</td>' . PHP_EOL;
+				echo '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] ) . '</td>' . PHP_EOL;
 				echo '<td>' . $ticket_data['lastposter'] . '</td>' . PHP_EOL;
 			}
 
