@@ -553,10 +553,10 @@ class WP_Dev_Dashboard_Admin {
 				echo '<tr>' . PHP_EOL;
 				echo '<td>' . $icon_html . '</td>' . PHP_EOL;
 				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
-				echo '<td>' . $plugin_theme_names[$ticket_data['slug']] . '</td>' . PHP_EOL;
+				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
 				echo '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
 				echo '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] ) . '</td>' . PHP_EOL;
-				echo '<td>' . $ticket_data['lastposter'] . '</td>' . PHP_EOL;
+				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['lastposterhref'], $ticket_data['lastposter'], PHP_EOL );
 			}
 
 			?>
@@ -1027,17 +1027,19 @@ class WP_Dev_Dashboard_Admin {
 			$startby    = $title->find( 'a[class=bbp-author-name]', 0 );
 			$lastposter = $freshness->find( 'a[class=bbp-author-name]', 0 );
 
-			$row_data['href']       = $link->href;
-			$row_data['text']       = $link->innertext;
-			$row_data['time']       = $time->innertext;
-			$row_data['timestamp']  = strtotime( $row_data['time'] );
-			$row_data['status']     = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
-			$row_data['sticky']     = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
-			$row_data['closed']     = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
-			$row_data['startedby']  = $startby->innertext;
-			$row_data['lastposter'] = $lastposter->innertext;
-			$row_data['type']       = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
-			$row_data['slug']       = $plugin_theme_slug;
+			$row_data['href']           = $link->href;
+			$row_data['text']           = $link->innertext;
+			$row_data['time']           = $time->innertext;
+			$row_data['timestamp']      = strtotime( $row_data['time'] );
+			$row_data['status']         = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
+			$row_data['sticky']         = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
+			$row_data['closed']         = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
+			$row_data['startedby']      = $startby->innertext;
+			$row_data['startedbyhref']  = $startby->href;
+			$row_data['lastposter']     = $lastposter->innertext;
+			$row_data['lastposterhref'] = $lastposter->href;
+			$row_data['type']           = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+			$row_data['slug']           = $plugin_theme_slug;
 
 			$rows_data[] = $row_data;
 
