@@ -217,9 +217,6 @@ class WP_Dev_Dashboard {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_settings_page' );
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'add_settings_fields' );
 
-		// Add metabox trigger script.
-		$this->loader->add_action( 'admin_footer-toplevel_page_' . $this->slug, $plugin_admin, 'print_metabox_trigger_scripts' );
-
 		$this->loader->add_action( 'wp_ajax_refresh_wpdd', $plugin_admin, 'get_ajax_content' );
 
 	}

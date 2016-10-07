@@ -187,7 +187,7 @@ class WP_Dev_Dashboard_Admin {
 		wp_localize_script( $this->plugin_slug, "wpddSettings", $this->js_data );
 
 		// Enqueue necessary scripts for metaboxes.
-		wp_enqueue_script( 'postbox' );
+		//wp_enqueue_script( 'postbox' );
 
 	}
 
@@ -261,7 +261,7 @@ class WP_Dev_Dashboard_Admin {
 			<div id="poststuff" data-wpdd-tab="<?php echo $active_tab; ?>">
 				<form action='options.php' method='post'>
 					<?php
-					// Do main metabox/table output.
+					// Do main table output.
 					$this->do_ajax_container( 'tickets' );
 					?>
 				</form>
@@ -471,25 +471,74 @@ class WP_Dev_Dashboard_Admin {
 	}
 
 	/**
-	 * Output metaboxes for tickets.
+	 * Output the table for tickets.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param string $ticket_type   Type of ticket to output.
 	 * @param bool   $force_refresh Whether or not to force an uncached refresh.
 	 */
-	public function do_meta_boxes( $ticket_type = 'plugins', $force_refresh = false ) {
+	public function do_ticket_table( $ticket_type = 'plugins', $force_refresh = false ) {
 		?>
-		<div class="<?php echo "{$this->plugin_slug}-metaboxes"; ?>">
+		<table class="widefat striped">
+			<thead>
+				<td>Status</td>
+				<td>Title</td>
+				<td>Plugin/Theme</td>
+				<td>Type</td>
+				<td>Last Post</td>
+				<td>Last Poster</td>
+			</thead>
+			<tbody>
 		<?php
-			// Generate nonces for metabox state/order.
-			wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
-			wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+			$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
+			$tickets_data = array();
+			$plugin_theme_names = array();
+			
+			foreach( $plugins_themes as $plugin_theme ) {
+				// Skip if there are no tickets.
+				if ( empty ( $plugin_theme->tickets_data ) ) {
+					continue;
+				}
 
-			$this->add_ticket_metaboxes( $ticket_type, $force_refresh );
+				$plugin_theme_names[$plugin_theme->slug] = $plugin_theme->name;
+				$tickets_data = array_merge( $tickets_data, $plugin_theme->tickets_data );
+
+			}
+
+			uasort( $tickets_data, function( $plugin_1, $plugin_2 ) {
+				return $plugin_1['timestamp'] < $plugin_2['timestamp'];
+			});
+			
+			foreach ( $tickets_data as $ticket_data ) {
+
+				if ( empty ( $this->options['show_all_tickets'] ) ) {
+					if ( 'unresolved' != $ticket_data['status'] || true == $ticket_data['closed'] || true == $ticket_data['sticky']) {
+						continue;
+					}
+				}
+
+				// Generate status icons.
+				if ( 'resolved' == $ticket_data['status'] ) {
+					$icon_class = 'yes';
+				} else {
+					$icon_class = 'editor-help';
+				}
+
+				$icon_html = sprintf( '<span class="dashicons dashicons-%s" title="%s"></span> ', $icon_class, ucfirst( $ticket_data['status'] ) );
+
+				echo '<tr>' . PHP_EOL;
+				echo '<td>' . $icon_html . '</td>' . PHP_EOL;
+				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
+				echo '<td>' . $plugin_theme_names[$ticket_data['slug']] . '</td>' . PHP_EOL;
+				echo '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
+				echo '<td>' . date( 'g:m a M d, Y', $ticket_data['timestamp'] ) . '</td>' . PHP_EOL;
+				echo '<td>' . $ticket_data['lastposter'] . '</td>' . PHP_EOL;
+			}
+
 			?>
-			<div id="postbox-container-1" class="postbox-container"><?php do_meta_boxes( $this->plugin_slug, 'normal', null ); ?></div>
-		</div>
+			</tbody>
+		</table>
 		<?php
 	}
 
@@ -521,7 +570,7 @@ class WP_Dev_Dashboard_Admin {
         	<a href="#" class="button" data-wpdd-tab-target="info"><span class="dashicons dashicons-list-view" data-wpdd-tab-target="info"></span> <?php echo __( 'Statistics', 'wp-dev-dashboard '); ?></a>
         </div>
         <div class="wpdd-sub-tab-container">
-        	<div class="wppd-sub-tab wpdd-sub-tab-tickets active"><?php $this->do_meta_boxes( $ticket_type, $force_refresh ); ?></div>
+        	<div class="wppd-sub-tab wpdd-sub-tab-tickets active"><?php $this->do_ticket_table( $ticket_type, $force_refresh ); // $this->do_meta_boxes( $ticket_type, $force_refresh ); ?></div>
         	<div class="wppd-sub-tab wpdd-sub-tab-info"><?php $this->output_list_table( $ticket_type, $current_url ); ?></div>
         </div>
         <?php
@@ -530,92 +579,6 @@ class WP_Dev_Dashboard_Admin {
 		$this->do_refresh_button();
 
 		wp_die(); // this is required to terminate immediately and return a proper response
-
-	}
-
-	/**
-	 * Register ticket metaboxes.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $ticket_type   Type of ticket to check for.
-	 * @param bool   $force_refresh Whether or not to force an uncached refresh.
-	 */
-	public function add_ticket_metaboxes( $ticket_type = 'plugins', $force_refresh = false ) {
-
-		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
-
-		// Sort plugins alphabetically.
-		uasort( $plugins_themes, function( $plugin_1, $plugin_2 ) {
-			return strnatcmp( strtolower( $plugin_1->name ), strtolower( $plugin_2->name ) );
-		});
-
-		// Omit resolved tickets per admin setting.
-		if ( empty ( $this->options['show_all_tickets'] ) ) {
-
-			foreach ( $plugins_themes as $plugin_theme_index => $plugin_theme ) {
-
-				// Don't do anything if there's no ticket data for this plugin/theme.
-				if ( empty( $plugin_theme->tickets_data ) ) {
-					continue;
-				}
-
-				// Remove any tickets that are resolved.
-				foreach ( $plugin_theme->tickets_data as $ticket_index => $ticket ) {
-					if ( 'unresolved' != $ticket['status'] || true == $ticket['closed'] || true == $ticket['sticky']) {
-						unset( $plugins_themes[ $plugin_theme_index ]->tickets_data[ $ticket_index ] );
-					}
-				}
-
-			}
-
-		}
-
-		// Return if no plugins are found.
-		if ( ! $plugins_themes ) {
-			echo '<p>' . sprintf( esc_html__( 'There are no %s to display.', 'wp-dev-dashboard' ), $ticket_type )  . '</p>';
-			return;
-		}
-
-		// Sort plugins alphabetically for their first load.
-		uasort( $plugins_themes, function( $plugin_1, $plugin_2 ) {
-			return strnatcmp( strtolower( $plugin_1->name ), strtolower( $plugin_2->name ) );
-		});
-
-		// Loop through all plugins.
-		foreach ( $plugins_themes as $plugin_theme ) {
-
-			// Skip if there are no tickets.
-			if ( empty ( $plugin_theme->tickets_data ) ) {
-				continue;
-			}
-
-			$tickets_data = $plugin_theme->tickets_data;
-
-			// Generate icon/count for unresolved tickets.
-			$ticket_html = sprintf( '<span class="dashicons dashicons-editor-help wpdd-unresolved" title="%s"></span> %d', __( 'Unresolved', 'wp-dev-dashboard' ), $plugin_theme->unresolved_count );
-
-			// Generate icon/count for resolved tickets if need be.
-			if ( ! empty( $this->options['show_all_tickets'] ) ) {
-				$ticket_html .= sprintf( ' <span class="dashicons dashicons-yes wpdd-resolved" title="%s"></span> %d', __( 'Resolved', 'wp-dev-dashboard' ), $plugin_theme->resolved_count );
-			}
-
-			$title = "{$plugin_theme->name} <span class='wpdd-ticket-count'>{$ticket_html}</span>";
-
-			add_meta_box(
-				"{$plugin_theme->slug}",
-				$title,
-				array( $this, 'do_plugin_metabox' ),
-				$this->plugin_slug,
-				'normal',
-				'core',
-				array(
-					'tickets_data' => $tickets_data,
-					'plugin_theme' => $plugin_theme
-				)
-			);
-
-		}
 
 	}
 
@@ -768,25 +731,6 @@ class WP_Dev_Dashboard_Admin {
 	}
 
 	/**
-	 * Output ticket metabox for a specific plugin/theme.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param WP_Post $post  Current post.
-	 * @param array $metabox Current metabox.
-	 */
-	public function do_plugin_metabox( $post, $metabox ) {
-
-		//$plugin_theme_data_html = $this->get_plugin_theme_data_html( $metabox['args']['plugin_theme'] );
-		$plugin_theme_data_html = '';
-		$tickets_html = $this->get_tickets_html( $metabox['args']['tickets_data'] );
-
-		$output = $plugin_theme_data_html . $tickets_html;
-		echo $output;
-
-	}
-
-	/**
 	 * Generate HTML for output for a plugin's/theme's tickets.
 	 *
 	 * @since 1.0.0
@@ -860,21 +804,6 @@ class WP_Dev_Dashboard_Admin {
 
 		return ob_get_clean();
 
-	}
-
-	/**
-	 * Output JS necessary to trigger metabox sorting/toggling.
-	 *
-	 * @since 1.0.0
-	 */
-	public function print_metabox_trigger_scripts() {
-		?>
-		<script>
-			jQuery( document ).on( 'ready wpddRefreshAfter', function(){
-				postboxes.add_postbox_toggles( '<?php echo $this->plugin_slug; ?>' );
-			});
-		</script>
-		<?php
 	}
 
 	/**
@@ -1085,6 +1014,7 @@ class WP_Dev_Dashboard_Admin {
 			$row_data['startedby']  = $startby->innertext;
 			$row_data['lastposter'] = $lastposter->innertext;
 			$row_data['type']       = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+			$row_data['slug']       = $plugin_theme_slug;
 
 			$rows_data[] = $row_data;
 
