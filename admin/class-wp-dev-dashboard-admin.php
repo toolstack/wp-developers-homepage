@@ -253,6 +253,8 @@ class WP_Dev_Dashboard_Admin {
 		// Check force refresh param passed via Ajax.
 		$force_refresh = isset( $_POST['force_refresh'] ) ? true : false;
 
+		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
+		
 		?>
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
@@ -386,6 +388,18 @@ class WP_Dev_Dashboard_Admin {
 			array( // Args
 				'id' => 'themes_default_tab',
 				'description' => __( 'Make the Themes tab the default tab shown.', 'wp-dev-dashboard' ),
+			)
+		);
+
+		add_settings_field(
+			'refresh_timeout', // ID
+			__( 'Hours before refresh', 'wp-dev-dashboard' ), // Title
+			array( $this, 'render_text_input' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'refresh_timeout',
+				'description' => __( 'The number of hours before a refresh will be done.  Valid hours are between 1 and 24.  Note: This setting will not take effect until the last data load expires.', 'wp-dev-dashboard' ),
 			)
 		);
 
@@ -660,6 +674,12 @@ class WP_Dev_Dashboard_Admin {
 			return $plugins_themes;
 		}
 
+		// Get the number of hours we should keep the transient for.
+		$timeout = (int)$this->options['refresh_timeout'];
+		
+		// Do some sanity checking on the timeout value.
+		if ( $timeout < 1 || $timeout > 24 ) { $timeout = 1; }
+		
 		if ( $force_refresh || false === $plugins_themes ) {
 
 			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
@@ -673,7 +693,7 @@ class WP_Dev_Dashboard_Admin {
 				 *
 				 * @param $expiration Expiration in seconds (default 3600 - one hour).
 				 */
-				$transient_expiration = apply_filters( 'wpdd_transient_expiration', HOUR_IN_SECONDS );
+				$transient_expiration = apply_filters( 'wpdd_transient_expiration', $timeout * HOUR_IN_SECONDS );
 				set_transient( $transient_slug, $plugins_themes, $transient_expiration );
 			}
 
