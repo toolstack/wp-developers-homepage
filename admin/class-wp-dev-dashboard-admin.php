@@ -203,58 +203,25 @@ class WP_Dev_Dashboard_Admin {
 			esc_html__( 'Dev Dashboard', 'wp-dev-dashboard' ), // Menu title
 			'manage_options', // Capability
 			$this->plugin_slug, // Page ID
-			array( $this, 'do_settings_page' ), // Callback
+			array( $this, 'do_admin_page' ), // Callback
 			'dashicons-hammer' // Icon
 		);
 
+		add_options_page( 
+			$this->plugin_name, // Page title
+			esc_html__( 'Dev Dashboard', 'wp-dev-dashboard' ), // Menu title
+			'manage_options', // Capability
+			$this->plugin_slug . '-admin', // Page ID
+			array( $this, 'do_settings_page' ) // Callback
+		);
 	}
 
 	/**
-	 * Output contents of settings page.
+	 * Output contents of the settings page.
 	 *
 	 * @since 1.0.0
 	 */
 	function do_settings_page() {
-
-		// Set the default tab to Plugins unless the user has selected otherwise.
-		$default_tab = isset( $this->options['themes_default_tab'] ) ? 'themes' : 'plugins';
-
-		// We're going to hide any tab that is empty, so get the list of Plugins/Themes.
-		// Only do a "quick" check of the cache here otherwise the user will have
-		// a "blank" screen while the data is fetched.
-		$plugins = $this->get_plugins_themes( 'plugins', false, true );
-		$themes  = $this->get_plugins_themes( 'themes', false, true );
-
-		// We're going to hide any tab that is empty, so setup a couple of variables to hold the style settings.
-		$plugins_tab_style = '';
-		$themes_tab_style = '';
-
-		// If there are no plugins, hide the tab and make sure the default tab is set to Themes.
-		if( false === $plugins ) {
-			$plugins_tab_style = ' style="display: none;"';
-			$default_tab = 'themes';
-		}
-
-		// If there are no themes, hide the tab and make sure the default tab is set to Plugins.
-		if( false === $themes ) {
-			$themes_tab_style = ' style="display: none;"';
-			$default_tab = 'plugins';
-		}
-
-		// If there are no themes or plugins, show the tabs and make sure the default tab is set to Settings.
-		if( false === $plugins && false === $themes ) {
-			$plugins_tab_style = '';
-			$themes_tab_style = '';
-			$default_tab = 'settings';
-		}
-
-		// Set up tab/settings.
-		$tab_base_url = "?page={$this->plugin_slug}";
-		$active_tab = isset( $_GET[ 'tab' ] ) ? $_GET[ 'tab' ] : $default_tab;
-		$is_secondary_tab = ( 'plugins' == $active_tab || 'themes' == $active_tab );
-
-		// Check force refresh param passed via Ajax.
-		$force_refresh = isset( $_POST['force_refresh'] ) ? true : false;
 
 		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
 
@@ -262,11 +229,6 @@ class WP_Dev_Dashboard_Admin {
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
 	        <h1><?php echo $this->plugin_name; ?></h1><br />
-	        <h2 class="nav-tab-wrapper">
-	        	<a href="<?php echo $tab_base_url; ?>&tab=plugins" class="nav-tab <?php echo $active_tab == 'plugins' ? 'nav-tab-active' : ''; ?>"<?php echo $plugins_tab_style; ?>><span class="dashicons dashicons-admin-plugins"></span> <?php echo __( 'Plugins', 'wp-dev-dashboard '); ?></a>
-	        	<a href="<?php echo $tab_base_url; ?>&tab=themes" class="nav-tab <?php echo $active_tab == 'themes' ? 'nav-tab-active' : ''; ?>"<?php echo $themes_tab_style; ?>><span class="dashicons dashicons-admin-appearance"></span> <?php echo __( 'Themes', 'wp-dev-dashboard '); ?></a>
-	        	<a href="<?php echo $tab_base_url; ?>&tab=settings" class="nav-tab <?php echo $active_tab == 'settings' ? 'nav-tab-active' : ''; ?>"><span class="dashicons dashicons-admin-generic"></span> <?php echo __( 'Settings', 'wp-dev-dashboard '); ?></a>
-	        </h2>
 			<div id="poststuff" data-wpdd-tab="<?php echo $active_tab; ?>">
 				<form action='options.php' method='post'>
 					<?php
@@ -274,16 +236,33 @@ class WP_Dev_Dashboard_Admin {
 					// Set up settings fields.
 					settings_fields( $this->plugin_slug );
 
-					if ( $is_secondary_tab ) {
+					$this->output_settings_fields();
+					submit_button( '', 'primary', '', false );
+					?>
+				</form>
+			</div><!-- #poststuff -->
+		</div><!-- .wrap -->
+		<?php
+	}
 
-						// Do main metabox/table output.
-						$this->do_ajax_container( 'tickets', $active_tab );
+	/**
+	 * Output contents of the admin page.
+	 *
+	 * @since 1.4.0
+	 */
+	function do_admin_page() {
 
-					} else {
-						$this->output_settings_fields();
-						submit_button( '', 'primary', '', false );
-					}
+		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
 
+		?>
+		<?php screen_icon(); ?>
+        <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
+	        <h1><?php echo $this->plugin_name; ?></h1><br />
+			<div id="poststuff" data-wpdd-tab="<?php echo $active_tab; ?>">
+				<form action='options.php' method='post'>
+					<?php
+					// Do main metabox/table output.
+					$this->do_ajax_container( 'tickets' );
 					?>
 				</form>
 			</div><!-- #poststuff -->
@@ -564,7 +543,12 @@ class WP_Dev_Dashboard_Admin {
 	 */
 	public function add_ticket_metaboxes( $ticket_type = 'plugins', $force_refresh = false ) {
 
-		$plugins_themes = $this->get_plugins_themes( $ticket_type, $force_refresh );
+		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
+
+		// Sort plugins alphabetically.
+		uasort( $plugins_themes, function( $plugin_1, $plugin_2 ) {
+			return strnatcmp( strtolower( $plugin_1->name ), strtolower( $plugin_2->name ) );
+		});
 
 		// Omit resolved tickets per admin setting.
 		if ( empty ( $this->options['show_all_tickets'] ) ) {
@@ -752,6 +736,8 @@ class WP_Dev_Dashboard_Admin {
 		// Loop through all plugins/themes.
 		foreach ( $plugins_themes as $index => $plugins_theme ) {
 
+			$plugins_themes[ $index ]->type = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+		
 			// Initialize ticket count to zero in case we have to return early.
 			$plugins_themes[ $index ]->unresolved_count = 0;
 			$plugins_themes[ $index ]->resolved_count = 0;

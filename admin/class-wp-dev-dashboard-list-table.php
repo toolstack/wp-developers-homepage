@@ -64,6 +64,7 @@ class WPDD_List_Table extends WP_List_Table {
 	function get_columns(){
 		$columns = array(
 			'name'             => __( 'Title', 'wp-dev-dashboard' ),
+			'type'			   => __( 'Type', 'wp-dev-dashboard' ),
 			'version'          => __( 'Version', 'wp-dev-dashboard' ),
 			'tested'           => __( 'WP Version Tested', 'wp-dev-dashboard' ),
 			'rating'           => __( 'Rating', 'wp-dev-dashboard' ),
@@ -177,7 +178,7 @@ class WPDD_List_Table extends WP_List_Table {
 		$hidden = array();
 		$sortable = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
-		$this->items = $this->plugin_admin->get_plugins_themes( $this->table_type );
+		$this->items = array_merge( $this->plugin_admin->get_plugins_themes( 'plugins' ), $this->plugin_admin->get_plugins_themes( 'themes' ) );
 
 		// Sort items to reflect any table sorting.
 		usort( $this->items, array( $this, 'usort_reorder' ) );
@@ -209,7 +210,7 @@ class WPDD_List_Table extends WP_List_Table {
 					}
 				}
 
-				return sprintf( '<span class="%s">%s</span>', $class, $item->tested );
+				return sprintf( '<span class="%s">%s</span>', $class, $item->tested ? $item->rating : __( 'N/A', 'wp-dev-dashboard' ) );
 			case 'rating':
 				return $item->rating ? $item->rating : __( 'N/A', 'wp-dev-dashboard' );
 			case 'active_installs':
