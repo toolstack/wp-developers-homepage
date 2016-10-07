@@ -84,7 +84,6 @@
 		$ajaxContainer = $( '.wpdd-ajax-container' );
 		objectType = $ajaxContainer.attr( 'data-wpdd-object-type' );
 		ticketType = $ajaxContainer.attr( 'data-wpdd-ticket-type' );
-		$ajaxContainer.fadeTo( 'fast', 0.4 );
 
 		// Set up button stuff.
 		if ( $button ) {
