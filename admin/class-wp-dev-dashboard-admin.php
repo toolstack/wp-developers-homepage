@@ -223,13 +223,14 @@ class WP_Dev_Dashboard_Admin {
 	function do_settings_page() {
 
 		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
+		if ( empty( $this->options['age_limit'] ) ) { $this->options['age_limit'] = 0; }
 
 		?>
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
 	        <h1><?php echo $this->plugin_name; ?></h1><br />
-			<div id="poststuff" data-wpdd-tab="<?php echo $active_tab; ?>">
-				<form action='options.php' method='post'>
+			<div id="poststuff">
+				<form action="options.php" method="post">
 					<?php
 
 					// Set up settings fields.
@@ -252,6 +253,7 @@ class WP_Dev_Dashboard_Admin {
 	function do_admin_page() {
 
 		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
+		if ( empty( $this->options['age_limit'] ) ) { $this->options['age_limit'] = '0'; }
 
 		?>
 		<?php screen_icon(); ?>
@@ -381,6 +383,7 @@ class WP_Dev_Dashboard_Admin {
 			array( // Args
 				'id' => 'age_limit',
 				'description' => __( 'Ignore tickets older than this number of days. 0 = unlimited.', 'wp-dev-dashboard' ),
+				'default' => 0,
 			)
 		);
 
@@ -409,8 +412,9 @@ class WP_Dev_Dashboard_Admin {
 	 */
 	public function render_text_input( $args ) {
 
+		$default = array_key_exists( 'default', $args ) ? $args['default'] : '';
 		$option_name = $this->plugin_slug . '[' . $args['id'] . ']';
-		$option_value = ! empty( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : '';
+		$option_value = ! empty( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : $default;
 		printf(
             '%s<input type="text" value="%s" id="%s" name="%s" class="regular-text %s"/><br /><p class="description" for="%s">%s</p>',
             ! empty( $args['sub_heading'] ) ? '<b>' . $args['sub_heading'] . '</b><br />' : '',
