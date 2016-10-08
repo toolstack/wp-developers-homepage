@@ -259,7 +259,7 @@ class WP_Dev_Dashboard_Admin {
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
 	        <h1><?php echo $this->plugin_name; ?></h1><br />
-			<div id="poststuff" data-wpdd-tab="<?php echo $active_tab; ?>">
+			<div id="poststuff">
 				<form action='options.php' method='post'>
 					<?php
 					// Do main table output.
