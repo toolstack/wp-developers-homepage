@@ -361,18 +361,6 @@ class WP_Dev_Dashboard_Admin {
 		);
 
 		add_settings_field(
-			'themes_default_tab', // ID
-			__( 'Default to the Themes tab', 'wp-dev-dashboard' ), // Title
-			array( $this, 'render_checkbox' ), // Callback
-			$this->plugin_slug, // Page
-			'main-settings', // Section
-			array( // Args
-				'id' => 'themes_default_tab',
-				'description' => __( 'Make the Themes tab the default tab shown.', 'wp-dev-dashboard' ),
-			)
-		);
-
-		add_settings_field(
 			'refresh_timeout', // ID
 			__( 'Hours before refresh', 'wp-dev-dashboard' ), // Title
 			array( $this, 'render_text_input' ), // Callback
