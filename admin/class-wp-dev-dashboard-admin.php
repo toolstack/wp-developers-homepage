@@ -993,6 +993,7 @@ class WP_Dev_Dashboard_Admin {
 		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
 
 		if( is_wp_error( $html ) ) {
+			printf( __( 'WP Dev Dashboard error: %s (%s)<br />', 'wp-dev-dashboard' ), $html->get_error_message(), $plugin_theme_slug );
 			return false;
 		}
 
