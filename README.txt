@@ -53,6 +53,15 @@ WP Dev Dashboard is intended to be the go-to resource for WordPress plugin and t
 
 == Changelog ==
 
+= 1.4 =
+* Add ability to order plugins/themes tabs.
+
+= 1.3.2 =
+* Fix parsing issue with updated support forum markup. (@gregross)
+* Clean up PHP warnings/notices. (@gregross)
+* Improve error handling. (@gregross)
+* Add number formatting to the statistics chart. (@gregross)
+
 = 1.3.1 =
 * Minor CSS improvement to prevent table header wrapping (still wraps at intermediate screen sizes).
 * Bump $this->version.
@@ -72,6 +81,15 @@ WP Dev Dashboard is intended to be the go-to resource for WordPress plugin and t
 * First release
 
 == Upgrade Notice ==
+
+= 1.4 =
+* Add ability to order plugins/themes tabs.
+
+= 1.3.2 =
+* Fix parsing issue with updated support forum markup. (@gregross)
+* Clean up PHP warnings/notices. (@gregross)
+* Improve error handling. (@gregross)
+* Add number formatting to the statistics chart. (@gregross)
 
 = 1.3.1 =
 * Minor CSS improvement to prevent table header wrapping.

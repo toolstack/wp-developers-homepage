@@ -463,7 +463,7 @@ class WP_Dev_Dashboard_Admin {
 		);
 		?>
 		<div class="wpdd-refresh-button-container">
-			<?php submit_button( esc_attr__( 'Refresh List', 'wp-dev-dashboard' ), 'button wpdd-button-refresh', '', false, $refresh_button_atts ); ?><span class="spinner"></span>
+			<?php submit_button( esc_attr__( 'Reload from wordpress.org', 'wp-dev-dashboard' ), 'button wpdd-button-refresh', '', false, $refresh_button_atts ); ?><span class="spinner"></span>
 		</div>
 		<?php
 
@@ -676,18 +676,66 @@ class WP_Dev_Dashboard_Admin {
 	 * @param string $table_type Type of table to output (plugins|themes)
 	 */
 	public function output_list_table( $table_type = 'plugins', $current_url = null ) {
+?>
+		<table class="widefat striped wdd-stats-table">
+			<thead>
+				<tr>
+					<td><?php _e( 'Title', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Type', 'wp-dev-dashboard' ); ?>
+					<td><?php _e( 'Version', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'WP Version Tested', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Rating', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( '# of Reviews', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Active Installs', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Downloads', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Unresolved', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Resolved', 'wp-dev-dashboard' ); ?></td>
+				</tr>
+			</thead>
+			<tbody>
+<?php
+			$plugins_themes = $this->get_plugins_themes( $table_type );
 
-		/**
-		 * Include necessary global: hook_suffix. For some reason this
-		 * doesn't work by default and must be included manually to
-		 * avoid throwing a notice.
-		 */
-		global $hook_suffix;
+			$update_data = get_site_transient( 'update_core' );
+			$wp_branches = $update_data->updates;
 
-		$list_table = new WPDD_List_Table( $table_type, $hook_suffix, $current_url );
-		$list_table->prepare_items();
-  		$list_table->display();
+			$wp_version = '';
+			foreach( $wp_branches as $index => $branch ) {
+				if ( 'latest' == $branch->response ) {
+					$wp_version = $wp_branches[ $index ]->version;
+				}
+			}
+		
+			foreach( $plugins_themes as $plugin_theme ) {
+				echo '<tr>';
+    			printf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme->slug . '</td>' . PHP_EOL, $plugin_theme->name );
+				echo "<td>{$plugin_theme->type}</td>" . PHP_EOL;
+				echo "<td>{$plugin_theme->version}</td>" . PHP_EOL;
 
+    			$class = '';
+
+    			if ( $wp_version ) {
+    				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'plugins' == $table_type ) {
+    					$class = 'wpdd-current';
+    				} else {
+    					$class = 'wpdd-needs-update';
+    				}
+    			}
+
+    			printf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugins' == $table_type ? $plugin_theme->tested : __( 'N/A', 'wp-dev-dashboard' ) ) );
+				echo '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-dev-dashboard' ) ) . '</td>' . PHP_EOL;
+				echo "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->downloaded ) . '</td>' . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->unresolved_count ) . '</td>' . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->resolved_count ) . '</td>' . PHP_EOL;
+				echo '</tr>';
+			}
+
+			?>
+			</tbody>
+		</table>
+		<?php
 	}
 
 	/**
@@ -1062,8 +1110,7 @@ class WP_Dev_Dashboard_Admin {
 			$response = wp_remote_retrieve_body( $response );
 
 		} else {
-			return new WP_Error( 'error', __( 'Attempt to fetch failed', 'wp-dev-dashboard' ) );
-			// Log errors?
+			return new WP_Error( 'error', sprintf( __( 'Attempt to fetch support forums HTML failed (%s)', 'wp-dev-dashboard' ), $plugin_theme_slug ) );
 		}
 
 		return $response;
