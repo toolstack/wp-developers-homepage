@@ -26,8 +26,8 @@
 	$( '#wp-dev-dashboard-settings' ).on( 'click', '.wpdd-button-refresh', function( e ) {
 		e.preventDefault();
 
-		var $button = $( this );
-		wpdd_load_ajax_content( true, $button );
+		var button = $( this );
+		wpdd_load_ajax_content( true, button );
 
 	});
 
@@ -36,9 +36,9 @@
 
 		e.preventDefault();
 
-		var $button = $( this );
+		var button = $( this );
 
-		wpdd_toggle_tabs( $button );
+		wpdd_toggle_tabs( button );
 
 	});
 
@@ -71,9 +71,9 @@
 	 * @since 1.0.0
 	 *
 	 * @param {bool} forceRefresh Whether or not to force a cache-busting fetch.
-	 * @param {JQuery} $button Button used to call refresh, if used.
+	 * @param {JQuery} button Button used to call refresh, if used.
 	 */
-	var wpdd_load_ajax_content = function( forceRefresh, $button ) {
+	var wpdd_load_ajax_content = function( forceRefresh, button ) {
 
 		var $ajaxContainer,
 			objectType,
@@ -84,24 +84,25 @@
 		$ajaxContainer = $( '.wpdd-ajax-container' );
 		objectType = $ajaxContainer.attr( 'data-wpdd-object-type' );
 		ticketType = $ajaxContainer.attr( 'data-wpdd-ticket-type' );
-		$ajaxContainer.fadeTo( 'fast', 0.4 );
 
 		// Set up button stuff.
-		if ( $button ) {
+		if ( button ) {
 			var buttonOrigText,
 				refreshingTexts,
 				buttonRefreshingText,
-				$spinner,
+				spinner,
+				buttons,
 
-			buttonOrigText = $button.val();
+			buttons = $( '.wpdd-button-refresh' );
+			buttonOrigText = button.val();
 			refreshingTexts = wpddSettings.fetch_messages;
-			buttonRefreshingText = $button.attr( 'data-wpdd-refreshing-text' );
-			$spinner = $button.next( '.spinner' ).toggleClass( 'is-active');
+			buttonRefreshingText = buttons.attr( 'data-wpdd-refreshing-text' );
+			spinner = buttons.next( '.spinner' ).toggleClass( 'is-active');
 
 			// Get refresh message.
-			buttonRefreshingText = refreshingTexts[Math.floor(Math.random()*refreshingTexts.length)];
+			buttonRefreshingText = refreshingTexts[ Math.floor( Math.random() * refreshingTexts.length ) ];
 
-			$button.val( buttonRefreshingText ).prop( 'disabled', true );
+			buttons.val( buttonRefreshingText ).prop( 'disabled', true );
 		}
 
 		data = {
@@ -117,13 +118,38 @@
 
 		// Run Ajax request.
 		jQuery.post( ajaxurl, data, function( response ) {
+			var lastSortList, lastTicketsOrder, lastStatsOrder;
+			
+			lastSortList = $( '#wdd_tickets_table' );
+			if( lastSortList.length > 0 ) {
+				lastTicketsOrder = lastSortList[0].config.sortList;
+			} else {
+				lastTicketsOrder = [4,1];
+			}
+			
+			lastSortList = $( '.wdd-stats-table' );
+			if( lastSortList.length > 0 ) {
+				lastStatsOrder = lastSortList[0].config.sortList;
+			} else {
+				lastStatsOrder = [0,0];
+			}
 
 			$ajaxContainer.fadeTo( 'slow', 1 ).html( response );
 
-			if ( $button ) {
-				$button.val( buttonOrigText ).prop( 'disabled', false );
-				$spinner.toggleClass( 'is-active');
+			if ( button ) {
+				buttons.val( buttonOrigText ).prop( 'disabled', false );
+				spinner.toggleClass( 'is-active');
 			}
+
+			$( '#wdd_tickets_table' ).tablesorter({ 
+		        // sort on the date column, order dsc 
+		        sortList: [lastTicketsOrder] 
+			    }); 
+
+			$( '.wdd-stats-table' ).tablesorter({ 
+		        // sort on the date column, order dsc 
+		        sortList: [lastStatsOrder] 
+			    }); 
 
 			// Trigger event after refresh.
 			$( document ).trigger( 'wpddRefreshAfter' );
@@ -132,19 +158,19 @@
 
 	}
 
-	var wpdd_toggle_tabs = function( $button ) {
+	var wpdd_toggle_tabs = function( button ) {
 
 		var targetTabClass,
 			$tabsContainer;
 
 		// Don't do anything if this is already the active button.
-		if ( ! $button.hasClass( 'button-primary' ) ) {
+		if ( ! button.hasClass( 'button-primary' ) ) {
 
 			// Toggle "active" status.
-			$button.addClass( 'button-primary' ).siblings( '.button' ).removeClass( 'button-primary' );
+			button.addClass( 'button-primary' ).siblings( '.button' ).removeClass( 'button-primary' );
 
 			// Toggle visibility of tabs.
-			targetTabClass = $button.attr( 'data-wpdd-tab-target' );
+			targetTabClass = button.attr( 'data-wpdd-tab-target' );
 			$tabsContainer = $( '.wpdd-sub-tab-container' );
 
 			$tabsContainer.find( '.wppd-sub-tab' ).removeClass( 'active' );
@@ -153,7 +179,7 @@
 		}
 
 		// Remove focus/outline from button.
-		$button.blur();
+		button.blur();
 
 	}
 

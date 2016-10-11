@@ -172,6 +172,7 @@ class WP_Dev_Dashboard_Admin {
 	public function enqueue_styles() {
 
 		wp_enqueue_style( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'css/wp-dev-dashboard-admin.css', array(), $this->version, 'all' );
+		wp_enqueue_style( 'jquery-table-sorter-css', plugin_dir_url( __FILE__ ) . 'css/jquery-table-sorter.css', array(), $this->version, 'all' );
 
 	}
 
@@ -183,11 +184,9 @@ class WP_Dev_Dashboard_Admin {
 	public function enqueue_scripts() {
 
 		wp_enqueue_script( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'js/wp-dev-dashboard-admin.js', array( 'jquery' ), $this->version, true );
+		wp_enqueue_script( 'jquery-tablesorter-js', plugin_dir_url( __FILE__ ) . 'js/jquery.tablesorter.min.js', array( 'jquery' ), $this->version, true );
 
 		wp_localize_script( $this->plugin_slug, "wpddSettings", $this->js_data );
-
-		// Enqueue necessary scripts for metaboxes.
-		wp_enqueue_script( 'postbox' );
 
 	}
 
@@ -203,87 +202,68 @@ class WP_Dev_Dashboard_Admin {
 			esc_html__( 'Dev Dashboard', 'wp-dev-dashboard' ), // Menu title
 			'manage_options', // Capability
 			$this->plugin_slug, // Page ID
-			array( $this, 'do_settings_page' ), // Callback
+			array( $this, 'do_admin_page' ), // Callback
 			'dashicons-hammer' // Icon
 		);
 
+		add_options_page(
+			$this->plugin_name, // Page title
+			esc_html__( 'Dev Dashboard', 'wp-dev-dashboard' ), // Menu title
+			'manage_options', // Capability
+			$this->plugin_slug . '-admin', // Page ID
+			array( $this, 'do_settings_page' ) // Callback
+		);
 	}
 
 	/**
-	 * Output contents of settings page.
+	 * Output contents of the settings page.
 	 *
 	 * @since 1.0.0
 	 */
 	function do_settings_page() {
 
-		// Set the default tab to Plugins unless the user has selected otherwise.
-		$default_tab = isset( $this->options['themes_default_tab'] ) ? 'themes' : 'plugins';
-
-		// We're going to hide any tab that is empty, so get the list of Plugins/Themes.
-		// Only do a "quick" check of the cache here otherwise the user will have
-		// a "blank" screen while the data is fetched.
-		$plugins = $this->get_plugins_themes( 'plugins', false, true );
-		$themes  = $this->get_plugins_themes( 'themes', false, true );
-
-		// We're going to hide any tab that is empty, so setup a couple of variables to hold the style settings.
-		$plugins_tab_style = '';
-		$themes_tab_style = '';
-
-		// If there are no plugins, hide the tab and make sure the default tab is set to Themes.
-		if( false === $plugins ) {
-			$plugins_tab_style = ' style="display: none;"';
-			$default_tab = 'themes';
-		}
-
-		// If there are no themes, hide the tab and make sure the default tab is set to Plugins.
-		if( false === $themes ) {
-			$themes_tab_style = ' style="display: none;"';
-			$default_tab = 'plugins';
-		}
-
-		// If there are no themes or plugins, show the tabs and make sure the default tab is set to Settings.
-		if( false === $plugins && false === $themes ) {
-			$plugins_tab_style = '';
-			$themes_tab_style = '';
-			$default_tab = 'settings';
-		}
-
-		// Set up tab/settings.
-		$tab_base_url = "?page={$this->plugin_slug}";
-		$active_tab = isset( $_GET[ 'tab' ] ) ? $_GET[ 'tab' ] : $default_tab;
-		$is_secondary_tab = ( 'plugins' == $active_tab || 'themes' == $active_tab );
-
-		// Check force refresh param passed via Ajax.
-		$force_refresh = isset( $_POST['force_refresh'] ) ? true : false;
-
 		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
+		if ( empty( $this->options['age_limit'] ) ) { $this->options['age_limit'] = 0; }
 
 		?>
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
 	        <h1><?php echo $this->plugin_name; ?></h1><br />
-	        <h2 class="nav-tab-wrapper">
-	        	<a href="<?php echo $tab_base_url; ?>&tab=plugins" class="nav-tab <?php echo $active_tab == 'plugins' ? 'nav-tab-active' : ''; ?>"<?php echo $plugins_tab_style; ?>><span class="dashicons dashicons-admin-plugins"></span> <?php echo __( 'Plugins', 'wp-dev-dashboard '); ?></a>
-	        	<a href="<?php echo $tab_base_url; ?>&tab=themes" class="nav-tab <?php echo $active_tab == 'themes' ? 'nav-tab-active' : ''; ?>"<?php echo $themes_tab_style; ?>><span class="dashicons dashicons-admin-appearance"></span> <?php echo __( 'Themes', 'wp-dev-dashboard '); ?></a>
-	        	<a href="<?php echo $tab_base_url; ?>&tab=settings" class="nav-tab <?php echo $active_tab == 'settings' ? 'nav-tab-active' : ''; ?>"><span class="dashicons dashicons-admin-generic"></span> <?php echo __( 'Settings', 'wp-dev-dashboard '); ?></a>
-	        </h2>
-			<div id="poststuff" data-wpdd-tab="<?php echo $active_tab; ?>">
-				<form action='options.php' method='post'>
+			<div id="poststuff">
+				<form action="options.php" method="post">
 					<?php
 
 					// Set up settings fields.
 					settings_fields( $this->plugin_slug );
 
-					if ( $is_secondary_tab ) {
+					$this->output_settings_fields();
+					submit_button( '', 'primary', '', false );
+					?>
+				</form>
+			</div><!-- #poststuff -->
+		</div><!-- .wrap -->
+		<?php
+	}
 
-						// Do main metabox/table output.
-						$this->do_ajax_container( 'tickets', $active_tab );
+	/**
+	 * Output contents of the admin page.
+	 *
+	 * @since 1.4.0
+	 */
+	function do_admin_page() {
 
-					} else {
-						$this->output_settings_fields();
-						submit_button( '', 'primary', '', false );
-					}
+		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
+		if ( empty( $this->options['age_limit'] ) ) { $this->options['age_limit'] = '0'; }
 
+		?>
+		<?php screen_icon(); ?>
+        <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
+	        <h1><?php echo $this->plugin_name; ?></h1><br />
+			<div id="poststuff">
+				<form action='options.php' method='post'>
+					<?php
+					// Do main table output.
+					$this->do_ajax_container( 'tickets' );
 					?>
 				</form>
 			</div><!-- #poststuff -->
@@ -383,18 +363,6 @@ class WP_Dev_Dashboard_Admin {
 		);
 
 		add_settings_field(
-			'themes_default_tab', // ID
-			__( 'Default to the Themes tab', 'wp-dev-dashboard' ), // Title
-			array( $this, 'render_checkbox' ), // Callback
-			$this->plugin_slug, // Page
-			'main-settings', // Section
-			array( // Args
-				'id' => 'themes_default_tab',
-				'description' => __( 'Make the Themes tab the default tab shown.', 'wp-dev-dashboard' ),
-			)
-		);
-
-		add_settings_field(
 			'refresh_timeout', // ID
 			__( 'Hours before refresh', 'wp-dev-dashboard' ), // Title
 			array( $this, 'render_text_input' ), // Callback
@@ -403,6 +371,19 @@ class WP_Dev_Dashboard_Admin {
 			array( // Args
 				'id' => 'refresh_timeout',
 				'description' => __( 'The number of hours before a refresh will be done.  Valid hours are between 1 and 24.  Note: This setting will not take effect until the last data load expires.', 'wp-dev-dashboard' ),
+			)
+		);
+
+		add_settings_field(
+			'age_limit', // ID
+			__( 'Age limit', 'wp-dev-dashboard' ), // Title
+			array( $this, 'render_text_input' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'age_limit',
+				'description' => __( 'Ignore tickets older than this number of days. 0 = unlimited.', 'wp-dev-dashboard' ),
+				'default' => 0,
 			)
 		);
 
@@ -431,8 +412,9 @@ class WP_Dev_Dashboard_Admin {
 	 */
 	public function render_text_input( $args ) {
 
+		$default = array_key_exists( 'default', $args ) ? $args['default'] : '';
 		$option_name = $this->plugin_slug . '[' . $args['id'] . ']';
-		$option_value = ! empty( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : '';
+		$option_value = ! empty( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : $default;
 		printf(
             '%s<input type="text" value="%s" id="%s" name="%s" class="regular-text %s"/><br /><p class="description" for="%s">%s</p>',
             ! empty( $args['sub_heading'] ) ? '<b>' . $args['sub_heading'] . '</b><br />' : '',
@@ -481,7 +463,7 @@ class WP_Dev_Dashboard_Admin {
 		);
 		?>
 		<div class="wpdd-refresh-button-container">
-			<?php submit_button( esc_attr__( 'Refresh List', 'wp-dev-dashboard' ), 'button wpdd-button-refresh', '', false, $refresh_button_atts ); ?><span class="spinner"></span>
+			<?php submit_button( esc_attr__( 'Reload from wordpress.org', 'wp-dev-dashboard' ), 'button wpdd-button-refresh', '', false, $refresh_button_atts ); ?><span class="spinner"></span>
 		</div>
 		<?php
 
@@ -492,25 +474,86 @@ class WP_Dev_Dashboard_Admin {
 	}
 
 	/**
-	 * Output metaboxes for tickets.
+	 * Output the table for tickets.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param string $ticket_type   Type of ticket to output.
 	 * @param bool   $force_refresh Whether or not to force an uncached refresh.
 	 */
-	public function do_meta_boxes( $ticket_type = 'plugins', $force_refresh = false ) {
+	public function do_ticket_table( $ticket_type = 'plugins', $force_refresh = false ) {
 		?>
-		<div class="<?php echo "{$this->plugin_slug}-metaboxes"; ?>">
+		<table class="widefat striped" id="wdd_tickets_table">
+			<thead>
+				<tr>
+					<td><?php _e( 'Status', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Title' ); ?></td>
+					<td><?php _e( 'Plugin/Theme' ); ?></td>
+					<td><?php _e( 'Type' ); ?></td>
+					<td><?php _e( 'Last Post' ); ?></td>
+					<td><?php _e( 'Last Poster' ); ?></td>
+				</tr>
+			</thead>
+			<tbody>
 		<?php
-			// Generate nonces for metabox state/order.
-			wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
-			wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+			$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
+			$tickets_data = array();
+			$plugin_theme_names = array();
+			
+			$age_limit = ( empty( $this->options['age_limit'] ) ) ? 0 : (int)$this->options['age_limit'];
+			$ctime = time();
+			$age_limit_time = strtotime( "{$age_limit} days ago", $ctime );
+			
+			foreach( $plugins_themes as $plugin_theme ) {
+				// Skip if there are no tickets.
+				if ( empty ( $plugin_theme->tickets_data ) ) {
+					continue;
+				}
 
-			$this->add_ticket_metaboxes( $ticket_type, $force_refresh );
+				$plugin_theme_names[$plugin_theme->slug] = $plugin_theme->name;
+				$tickets_data = array_merge( $tickets_data, $plugin_theme->tickets_data );
+
+			}
+
+			uasort( $tickets_data, function( $plugin_1, $plugin_2 ) {
+				return $plugin_1['timestamp'] < $plugin_2['timestamp'];
+			});
+
+			foreach ( $tickets_data as $ticket_data ) {
+
+				if ( empty ( $this->options['show_all_tickets'] ) ) {
+					if ( 'unresolved' != $ticket_data['status'] || true == $ticket_data['closed'] || true == $ticket_data['sticky']) {
+						continue;
+					}
+				}
+
+				if ( $age_limit > 0 ) {
+					if ( $ticket_data['timestamp'] < $age_limit_time ) {
+						continue;
+					}
+				}
+				
+				// Generate status icons.
+				if ( 'resolved' == $ticket_data['status'] ) {
+					$icon_class = 'yes';
+				} else {
+					$icon_class = 'editor-help';
+				}
+
+				$icon_html = sprintf( '<span class="dashicons dashicons-%s" title="%s"></span> ', $icon_class, ucfirst( $ticket_data['status'] ) );
+
+				echo '<tr>' . PHP_EOL;
+				echo '<td>' . $icon_html . '</td>' . PHP_EOL;
+				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
+				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
+				echo '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
+				echo '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] ) . '</td>' . PHP_EOL;
+				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['lastposterhref'], $ticket_data['lastposter'], PHP_EOL );
+			}
+
 			?>
-			<div id="postbox-container-1" class="postbox-container"><?php do_meta_boxes( $this->plugin_slug, 'normal', null ); ?></div>
-		</div>
+			</tbody>
+		</table>
 		<?php
 	}
 
@@ -542,7 +585,7 @@ class WP_Dev_Dashboard_Admin {
         	<a href="#" class="button" data-wpdd-tab-target="info"><span class="dashicons dashicons-list-view" data-wpdd-tab-target="info"></span> <?php echo __( 'Statistics', 'wp-dev-dashboard '); ?></a>
         </div>
         <div class="wpdd-sub-tab-container">
-        	<div class="wppd-sub-tab wpdd-sub-tab-tickets active"><?php $this->do_meta_boxes( $ticket_type, $force_refresh ); ?></div>
+        	<div class="wppd-sub-tab wpdd-sub-tab-tickets active"><?php $this->do_ticket_table( $ticket_type, $force_refresh ); // $this->do_meta_boxes( $ticket_type, $force_refresh ); ?></div>
         	<div class="wppd-sub-tab wpdd-sub-tab-info"><?php $this->output_list_table( $ticket_type, $current_url ); ?></div>
         </div>
         <?php
@@ -551,87 +594,6 @@ class WP_Dev_Dashboard_Admin {
 		$this->do_refresh_button();
 
 		wp_die(); // this is required to terminate immediately and return a proper response
-
-	}
-
-	/**
-	 * Register ticket metaboxes.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $ticket_type   Type of ticket to check for.
-	 * @param bool   $force_refresh Whether or not to force an uncached refresh.
-	 */
-	public function add_ticket_metaboxes( $ticket_type = 'plugins', $force_refresh = false ) {
-
-		$plugins_themes = $this->get_plugins_themes( $ticket_type, $force_refresh );
-
-		// Omit resolved tickets per admin setting.
-		if ( empty ( $this->options['show_all_tickets'] ) ) {
-
-			foreach ( $plugins_themes as $plugin_theme_index => $plugin_theme ) {
-
-				// Don't do anything if there's no ticket data for this plugin/theme.
-				if ( empty( $plugin_theme->tickets_data ) ) {
-					continue;
-				}
-
-				// Remove any tickets that are resolved.
-				foreach ( $plugin_theme->tickets_data as $ticket_index => $ticket ) {
-					if ( 'unresolved' != $ticket['status'] || true == $ticket['closed'] || true == $ticket['sticky']) {
-						unset( $plugins_themes[ $plugin_theme_index ]->tickets_data[ $ticket_index ] );
-					}
-				}
-
-			}
-
-		}
-
-		// Return if no plugins are found.
-		if ( ! $plugins_themes ) {
-			echo '<p>' . sprintf( esc_html__( 'There are no %s to display.', 'wp-dev-dashboard' ), $ticket_type )  . '</p>';
-			return;
-		}
-
-		// Sort plugins alphabetically for their first load.
-		uasort( $plugins_themes, function( $plugin_1, $plugin_2 ) {
-			return strnatcmp( strtolower( $plugin_1->name ), strtolower( $plugin_2->name ) );
-		});
-
-		// Loop through all plugins.
-		foreach ( $plugins_themes as $plugin_theme ) {
-
-			// Skip if there are no tickets.
-			if ( empty ( $plugin_theme->tickets_data ) ) {
-				continue;
-			}
-
-			$tickets_data = $plugin_theme->tickets_data;
-
-			// Generate icon/count for unresolved tickets.
-			$ticket_html = sprintf( '<span class="dashicons dashicons-editor-help wpdd-unresolved" title="%s"></span> %d', __( 'Unresolved', 'wp-dev-dashboard' ), $plugin_theme->unresolved_count );
-
-			// Generate icon/count for resolved tickets if need be.
-			if ( ! empty( $this->options['show_all_tickets'] ) ) {
-				$ticket_html .= sprintf( ' <span class="dashicons dashicons-yes wpdd-resolved" title="%s"></span> %d', __( 'Resolved', 'wp-dev-dashboard' ), $plugin_theme->resolved_count );
-			}
-
-			$title = "{$plugin_theme->name} <span class='wpdd-ticket-count'>{$ticket_html}</span>";
-
-			add_meta_box(
-				"{$plugin_theme->slug}",
-				$title,
-				array( $this, 'do_plugin_metabox' ),
-				$this->plugin_slug,
-				'normal',
-				'core',
-				array(
-					'tickets_data' => $tickets_data,
-					'plugin_theme' => $plugin_theme
-				)
-			);
-
-		}
 
 	}
 
@@ -714,18 +676,66 @@ class WP_Dev_Dashboard_Admin {
 	 * @param string $table_type Type of table to output (plugins|themes)
 	 */
 	public function output_list_table( $table_type = 'plugins', $current_url = null ) {
+?>
+		<table class="widefat striped wdd-stats-table">
+			<thead>
+				<tr>
+					<td><?php _e( 'Title', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Type', 'wp-dev-dashboard' ); ?>
+					<td><?php _e( 'Version', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'WP Version Tested', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Rating', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( '# of Reviews', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Active Installs', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Downloads', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Unresolved', 'wp-dev-dashboard' ); ?></td>
+					<td><?php _e( 'Resolved', 'wp-dev-dashboard' ); ?></td>
+				</tr>
+			</thead>
+			<tbody>
+<?php
+			$plugins_themes = $this->get_plugins_themes( $table_type );
 
-		/**
-		 * Include necessary global: hook_suffix. For some reason this
-		 * doesn't work by default and must be included manually to
-		 * avoid throwing a notice.
-		 */
-		global $hook_suffix;
+			$update_data = get_site_transient( 'update_core' );
+			$wp_branches = $update_data->updates;
 
-		$list_table = new WPDD_List_Table( $table_type, $hook_suffix, $current_url );
-		$list_table->prepare_items();
-  		$list_table->display();
+			$wp_version = '';
+			foreach( $wp_branches as $index => $branch ) {
+				if ( 'latest' == $branch->response ) {
+					$wp_version = $wp_branches[ $index ]->version;
+				}
+			}
+		
+			foreach( $plugins_themes as $plugin_theme ) {
+				echo '<tr>';
+    			printf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme->slug . '</td>' . PHP_EOL, $plugin_theme->name );
+				echo "<td>{$plugin_theme->type}</td>" . PHP_EOL;
+				echo "<td>{$plugin_theme->version}</td>" . PHP_EOL;
 
+    			$class = '';
+
+    			if ( $wp_version ) {
+    				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'plugins' == $table_type ) {
+    					$class = 'wpdd-current';
+    				} else {
+    					$class = 'wpdd-needs-update';
+    				}
+    			}
+
+    			printf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugins' == $table_type ? $plugin_theme->tested : __( 'N/A', 'wp-dev-dashboard' ) ) );
+				echo '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-dev-dashboard' ) ) . '</td>' . PHP_EOL;
+				echo "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->downloaded ) . '</td>' . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->unresolved_count ) . '</td>' . PHP_EOL;
+				echo '<td>' . number_format_i18n( $plugin_theme->resolved_count ) . '</td>' . PHP_EOL;
+				echo '</tr>';
+			}
+
+			?>
+			</tbody>
+		</table>
+		<?php
 	}
 
 	/**
@@ -751,6 +761,8 @@ class WP_Dev_Dashboard_Admin {
 
 		// Loop through all plugins/themes.
 		foreach ( $plugins_themes as $index => $plugins_theme ) {
+
+			$plugins_themes[ $index ]->type = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
 
 			// Initialize ticket count to zero in case we have to return early.
 			$plugins_themes[ $index ]->unresolved_count = 0;
@@ -778,25 +790,6 @@ class WP_Dev_Dashboard_Admin {
 		}
 
 		return $plugins_themes;
-
-	}
-
-	/**
-	 * Output ticket metabox for a specific plugin/theme.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param WP_Post $post  Current post.
-	 * @param array $metabox Current metabox.
-	 */
-	public function do_plugin_metabox( $post, $metabox ) {
-
-		//$plugin_theme_data_html = $this->get_plugin_theme_data_html( $metabox['args']['plugin_theme'] );
-		$plugin_theme_data_html = '';
-		$tickets_html = $this->get_tickets_html( $metabox['args']['tickets_data'] );
-
-		$output = $plugin_theme_data_html . $tickets_html;
-		echo $output;
 
 	}
 
@@ -874,21 +867,6 @@ class WP_Dev_Dashboard_Admin {
 
 		return ob_get_clean();
 
-	}
-
-	/**
-	 * Output JS necessary to trigger metabox sorting/toggling.
-	 *
-	 * @since 1.0.0
-	 */
-	public function print_metabox_trigger_scripts() {
-		?>
-		<script>
-			jQuery( document ).on( 'ready wpddRefreshAfter', function(){
-				postboxes.add_postbox_toggles( '<?php echo $this->plugin_slug; ?>' );
-			});
-		</script>
-		<?php
 	}
 
 	/**
@@ -1063,9 +1041,10 @@ class WP_Dev_Dashboard_Admin {
 		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
 
 		if( is_wp_error( $html ) ) {
+			printf( __( 'WP Dev Dashboard error: %s (%s)<br />', 'wp-dev-dashboard' ), $html->get_error_message(), $plugin_theme_slug );
 			return false;
 		}
-		
+
 		$html = HtmlDomParser::str_get_html( $html );
 
 		$table = $html->find( 'li[class=bbp-body]', 0 );
@@ -1082,15 +1061,26 @@ class WP_Dev_Dashboard_Admin {
 		foreach ( $rows as $row ) {
 
 			// Get row attributes.
-			$link = $row->find( 'li[class=bbp-topic-title]', 0 )->find( 'a', 0 );
-			$time = $row->find( 'li[class=bbp-topic-freshness]', 0 )->find( 'a', 0 );
+			$title      = $row->find( 'li[class=bbp-topic-title]', 0 );
+			$freshness  = $row->find( 'li[class=bbp-topic-freshness]', 0 );
+			$link       = $title->find( 'a', 0 );
+			$time       = $freshness->find( 'a', 0 );
+			$startby    = $title->find( 'a[class=bbp-author-name]', 0 );
+			$lastposter = $freshness->find( 'a[class=bbp-author-name]', 0 );
 
-			$row_data['href'] = $link->href;
-			$row_data['text'] = $link->innertext;
-			$row_data['time'] = $time->innertext;
-			$row_data['status'] = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
-			$row_data['sticky'] = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
-			$row_data['closed'] = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
+			$row_data['href']           = $link->href;
+			$row_data['text']           = $link->innertext;
+			$row_data['time']           = $time->innertext;
+			$row_data['timestamp']      = strtotime( $row_data['time'] );
+			$row_data['status']         = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
+			$row_data['sticky']         = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
+			$row_data['closed']         = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
+			$row_data['startedby']      = $startby->innertext;
+			$row_data['startedbyhref']  = $startby->href;
+			$row_data['lastposter']     = $lastposter->innertext;
+			$row_data['lastposterhref'] = $lastposter->href;
+			$row_data['type']           = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+			$row_data['slug']           = $plugin_theme_slug;
 
 			$rows_data[] = $row_data;
 
@@ -1120,8 +1110,7 @@ class WP_Dev_Dashboard_Admin {
 			$response = wp_remote_retrieve_body( $response );
 
 		} else {
-			return new WP_Error( 'error', __( 'Attempt to fetch failed', 'wp-dev-dashboard' ) );
-			// Log errors?
+			return new WP_Error( 'error', sprintf( __( 'Attempt to fetch support forums HTML failed (%s)', 'wp-dev-dashboard' ), $plugin_theme_slug ) );
 		}
 
 		return $response;
