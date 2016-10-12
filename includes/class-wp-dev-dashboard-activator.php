@@ -31,6 +31,10 @@ class WP_Dev_Dashboard_Activator {
 	 */
 	public static function activate() {
 
+		$plugin_admin = WP_Dev_Dashboard_Admin::get_instance( $this );
+
+		$plugin_admin->set_wp_cron();
+		
 	}
 
 }

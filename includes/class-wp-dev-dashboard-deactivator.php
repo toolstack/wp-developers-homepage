@@ -31,6 +31,10 @@ class WP_Dev_Dashboard_Deactivator {
 	 */
 	public static function deactivate() {
 
+	$plugin_admin = WP_Dev_Dashboard_Admin::get_instance( $this );
+
+		$plugin_admin->clear_wp_cron();
+
 	}
 
 }

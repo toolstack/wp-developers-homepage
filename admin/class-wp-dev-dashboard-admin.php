@@ -234,6 +234,9 @@ class WP_Dev_Dashboard_Admin {
 		if ( empty( $this->options['refresh_timeout'] ) ) { $this->options['refresh_timeout'] = 1; }
 		if ( empty( $this->options['age_limit'] ) ) { $this->options['age_limit'] = 0; }
 
+		// Make sure the cron job is set.
+		$this->set_wp_cron();
+
 		?>
 		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
@@ -380,6 +383,18 @@ class WP_Dev_Dashboard_Admin {
 			array( // Args
 				'id' => 'refresh_timeout',
 				'description' => __( 'The number of hours before a refresh will be done.  Valid hours are between 1 and 24.  Note: This setting will not take effect until the last data load expires.', 'wp-dev-dashboard' ),
+			)
+		);
+
+		add_settings_field(
+			'schedule_updates', // ID
+			__( 'Schedule updates', 'wp-dev-dashboard' ), // Title
+			array( $this, 'render_checkbox' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'schedule_updates',
+				'description' => __( 'Create a WP Cron job to update the data when it becomes stale (based on the refresh timeout above).  Note: The update will be executed at the top of the hour and will update data that is out of date or due to expire in the next 30 minutes.', 'wp-dev-dashboard' ),
 			)
 		);
 
@@ -638,6 +653,9 @@ class WP_Dev_Dashboard_Admin {
 			return $plugins_themes;
 		}
 
+		// Make sure the cron job is set.
+		$this->set_wp_cron();
+		
 		// Get the number of hours we should keep the transient for.
 		$timeout = (int)$this->options['refresh_timeout'];
 
@@ -1123,4 +1141,45 @@ class WP_Dev_Dashboard_Admin {
 
 	}
 
+	public function set_wp_cron() {
+		$timestamp = wp_next_scheduled( array( $this, 'run_wp_cron' ) );
+		$update = array_key_exists( 'schedule_updates', $this->options ) ? $this->options['schedule_updates'] : false;
+		
+		if ( ! $timestamp && $update ) {
+			$starthour = date( 'H' ) + 1;
+			$starttime = strtotime( "{$starthour}:00 today" );
+
+			wp_schedule_event( $starttime, 'hourly', array( $this, 'run_wp_cron' ) );
+		}
+	}
+	
+	public function clear_wp_cron() {
+		wp_clear_scheduled_hook( array( $this, 'run_wp_cron' ) );
+	}
+	
+	public function run_wp_cron() {
+		$data = get_option( $this->data_slug, false );
+
+		// Get the number of hours we should keep the data for.
+		$timeout = (int)$this->options['refresh_timeout'];
+
+		// Do some sanity checking on the timeout value.
+		if ( $timeout < 1 || $timeout > 24 ) { $timeout = 1; }
+
+		// Calculate the expiry time of the current data.
+		$expiry_time = $timeout * 60 * 60;
+		
+		// The expiry time is the timestamp + # hours - 30 minutes (1800)
+		// The minus thrity minutes ensures that the longest wait period is 30 minutes for an update to happen.
+		$plugins_expiry_time = $data['plugins_timestamp'] + $expiry_time - 1800;
+		$themes_expiry_time = $data['themes_timestamp'] + $expiry_time - 1800;
+				
+		if ( time() > $plugins_expiry_time ) {
+			get_plugins_themes( 'plugins', true, false );
+		}
+		
+		if ( time() > $themes_expiry_time ) {
+			get_plugins_themes( 'themes', true, false );
+		}
+	}
 }
