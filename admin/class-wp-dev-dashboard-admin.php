@@ -106,6 +106,15 @@ class WP_Dev_Dashboard_Admin {
 	);
 
 	/**
+	 * The slug to use to save the wordpress.org data.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 * @var      WP_Dev_Dashboard_Admin    $instance    The instance of this class.
+	 */
+	private $data_slug = 'wdd_wordpress_data';
+
+	/**
 	 * The instance of this class.
 	 *
 	 * @since    1.0.0
@@ -613,27 +622,17 @@ class WP_Dev_Dashboard_Admin {
 		// Get username to pull plugin data.
 		$username = ! empty( $this->options['username'] ) ? $this->options['username'] : '';
 
-		// Set transient slug for this specific username and plugin/theme slugs.
-		$transient_slug = $ticket_type;
-
-		// Append username to transient.
-		if ( $username ) {
-			$transient_slug .= "-{$username}";
+		$data = get_option( $this->data_slug, false );
+		
+		if ( false === $data ) {
+			$data = array();
+			$data['plugins'] = array();
+			$data['themes'] = array();
+			$data['plugins_timestamp'] = 0;
+			$data['themes_timestamp'] = 0;
 		}
-
-		// Append plugin slugs to transient.
-		if ( 'plugins' == $ticket_type && ! empty( $this->options['plugin_slugs'] ) ) {
-			$transient_slug .= '-' . $this->options['plugin_slugs'];
-		}
-
-		// Append theme slugs to transient.
-		if ( 'themes' == $ticket_type && ! empty( $this->options['theme_slugs'] ) ) {
-			$transient_slug .= '-' . $this->options['theme_slugs'];
-		}
-
-		$transient_slug = 'wpdd-' . md5( $transient_slug );
-
-		$plugins_themes = get_transient( $transient_slug );
+		
+		$plugins_themes = $data[ $ticket_type ];
 
 		if( true === $quick ) {
 			return $plugins_themes;
@@ -645,7 +644,11 @@ class WP_Dev_Dashboard_Admin {
 		// Do some sanity checking on the timeout value.
 		if ( $timeout < 1 || $timeout > 24 ) { $timeout = 1; }
 
-		if ( $force_refresh || false === $plugins_themes ) {
+		// Calculate the expiry time of the current data.
+		$expiry_time = $data[ $ticket_type . '_timestamp' ];
+		$expiry_time = $expiry_time + ( $timeout * 60 * 60 );
+		
+		if ( $force_refresh || time() > $expiry_time ) {
 
 			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
 
@@ -659,7 +662,10 @@ class WP_Dev_Dashboard_Admin {
 				 * @param $expiration Expiration in seconds (default 3600 - one hour).
 				 */
 				$transient_expiration = apply_filters( 'wpdd_transient_expiration', $timeout * HOUR_IN_SECONDS );
-				set_transient( $transient_slug, $plugins_themes, $transient_expiration );
+				
+				$data[ $ticket_type ] = $plugins_themes;
+				$data[ $ticket_type . '_timestamp'] = time();
+				update_option( $this->data_slug, $data );
 			}
 
 		}
