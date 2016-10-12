@@ -358,7 +358,7 @@ class WP_Dev_Dashboard_Admin {
 			'main-settings', // Section
 			array( // Args
 				'id' => 'show_all_tickets',
-				'description' => sprintf( '<i>%s</i>', __( '(Only unresolved tickets are shown by default)', 'wp-dev-dashboard' ) ),
+				'description' => __( 'Show all tickets, by default only unresolved tickets are shown.', 'wp-dev-dashboard' ),
 			)
 		);
 
@@ -440,11 +440,11 @@ class WP_Dev_Dashboard_Admin {
 		$option_name = $this->plugin_slug . '[' . $args['id'] . ']';
 		$option_value = ! empty( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : '';
 		printf(
-            '<label for="%s"><input type="checkbox" value="1" id="%s" name="%s" %s/> %s</label>',
-            $option_name,
+            '<input type="checkbox" value="1" id="%s" name="%s" %s/><p class="description" for="%s">%s</p>',
             $option_name,
             $option_name,
             checked( 1, $option_value, false ),
+            $option_name,
             ! empty( $args['description'] ) ? $args['description'] : ''
         );
 
