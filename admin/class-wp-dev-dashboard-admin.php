@@ -115,13 +115,22 @@ class WP_Dev_Dashboard_Admin {
 	private $data_slug = 'wdd_wordpress_data';
 
 	/**
-	 * The time stamp of the last themes ticekts update .
+	 * The time stamp of the last themes ticekts update.
 	 *
 	 * @since    2.0.0
 	 * @access   private
 	 * @var      WP_Dev_Dashboard_Admin    $instance    The instance of this class.
 	 */
 	private $last_data_update = 0;
+
+	/**
+	 * The timezone offset for the local display time.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      WP_Dev_Dashboard_Admin    $instance    The instance of this class.
+	 */
+	private $tz_offset = 0;
 
 	/**
 	 * The instance of this class.
@@ -170,6 +179,12 @@ class WP_Dev_Dashboard_Admin {
 			),
 		);
 
+		if( get_option('timezone_string') ) {
+			$this->tz_offset = timezone_offset_get( timezone_open( get_option( 'timezone_string' ) ), new DateTime() );
+		} else if( get_option( 'gmt_offset' ) ) {
+			$this->tz_offset = get_option( 'gmt_offset' ) * 60 * 60;
+		}
+		
 	}
 
 	/**
@@ -580,7 +595,7 @@ class WP_Dev_Dashboard_Admin {
 				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
 				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
 				echo '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
-				echo '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] ) . '</td>' . PHP_EOL;
+				echo '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] + $this->tz_offset ) . '</td>' . PHP_EOL;
 				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['lastposterhref'], $ticket_data['lastposter'], PHP_EOL );
 			}
 
@@ -627,7 +642,7 @@ class WP_Dev_Dashboard_Admin {
 		$this->do_refresh_button();
 
 		_e( 'Data last loaded from wordpress.org on: ' );
-		echo date( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $this->last_data_update );
+		echo date( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $this->last_data_update + $this->tz_offset );
 
 		wp_die(); // this is required to terminate immediately and return a proper response
 
