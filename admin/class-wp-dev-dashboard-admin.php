@@ -108,11 +108,20 @@ class WP_Dev_Dashboard_Admin {
 	/**
 	 * The slug to use to save the wordpress.org data.
 	 *
-	 * @since    1.0.0
-	 * @access   protected
+	 * @since    2.0.0
+	 * @access   private
 	 * @var      WP_Dev_Dashboard_Admin    $instance    The instance of this class.
 	 */
 	private $data_slug = 'wdd_wordpress_data';
+
+	/**
+	 * The time stamp of the last themes ticekts update .
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      WP_Dev_Dashboard_Admin    $instance    The instance of this class.
+	 */
+	private $last_data_update = 0;
 
 	/**
 	 * The instance of this class.
@@ -617,6 +626,9 @@ class WP_Dev_Dashboard_Admin {
         // Output refresh button.
 		$this->do_refresh_button();
 
+		_e( 'Data last loaded from wordpress.org on: ' );
+		echo date( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $this->last_data_update );
+
 		wp_die(); // this is required to terminate immediately and return a proper response
 
 	}
@@ -645,6 +657,8 @@ class WP_Dev_Dashboard_Admin {
 			$data['themes'] = array();
 			$data['plugins_timestamp'] = 0;
 			$data['themes_timestamp'] = 0;
+		} else {
+			$this->last_data_update = $data['plugins_timestamp'] > $data['themes_timestamp'] ? $data['plugins_timestamp'] : $data['themes_timestamp'];
 		}
 		
 		$plugins_themes = $data[ $ticket_type ];
@@ -684,6 +698,7 @@ class WP_Dev_Dashboard_Admin {
 				$data[ $ticket_type ] = $plugins_themes;
 				$data[ $ticket_type . '_timestamp'] = time();
 				update_option( $this->data_slug, $data );
+				$this->last_data_update = $data[ $ticket_type . '_timestamp'];
 			}
 
 		}
@@ -1065,7 +1080,8 @@ class WP_Dev_Dashboard_Admin {
 		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
 
 		if( is_wp_error( $html ) ) {
-			printf( __( 'WP Dev Dashboard error: %s (%s)<br />', 'wp-dev-dashboard' ), $html->get_error_message(), $plugin_theme_slug );
+			printf( __( '<div class="error">WP Dev Dashboard error: %s (%s)</div>', 'wp-dev-dashboard' ), $html->get_error_message(), $plugin_theme_slug );
+			
 			return false;
 		}
 
@@ -1142,19 +1158,19 @@ class WP_Dev_Dashboard_Admin {
 	}
 
 	public function set_wp_cron() {
-		$timestamp = wp_next_scheduled( array( $this, 'run_wp_cron' ) );
+		$timestamp = wp_next_scheduled( 'wdd_run_wp_cron' );
 		$update = array_key_exists( 'schedule_updates', $this->options ) ? $this->options['schedule_updates'] : false;
 		
 		if ( ! $timestamp && $update ) {
 			$starthour = date( 'H' ) + 1;
 			$starttime = strtotime( "{$starthour}:00 today" );
 
-			wp_schedule_event( $starttime, 'hourly', array( $this, 'run_wp_cron' ) );
+			wp_schedule_event( $starttime, 'hourly', 'wdd_run_wp_cron' );
 		}
 	}
 	
 	public function clear_wp_cron() {
-		wp_clear_scheduled_hook( array( $this, 'run_wp_cron' ) );
+		wp_clear_scheduled_hook( 'wdd_run_wp_cron' );
 	}
 	
 	public function run_wp_cron() {

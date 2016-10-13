@@ -155,6 +155,11 @@ class WP_Dev_Dashboard {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-dev-dashboard-i18n.php';
 
 		/**
+		 * Common functions.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/functions.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the Dashboard.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp-dev-dashboard-admin.php';
