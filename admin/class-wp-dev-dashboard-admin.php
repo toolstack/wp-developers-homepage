@@ -133,6 +133,15 @@ class WP_Dev_Dashboard_Admin {
 	private $tz_offset = 0;
 
 	/**
+	 * An array of slugs that failed to retrieve data from wordpress.org.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      WP_Dev_Dashboard_Admin    $instance    The instance of this class.
+	 */
+	private $error_slugs;
+
+	/**
 	 * The instance of this class.
 	 *
 	 * @since    1.0.0
@@ -522,87 +531,87 @@ class WP_Dev_Dashboard_Admin {
 	}
 
 	/**
-	 * Output the table for tickets.
+	 * Generate the table for tickets and return it.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $ticket_type   Type of ticket to output.
 	 * @param bool   $force_refresh Whether or not to force an uncached refresh.
 	 */
-	public function do_ticket_table( $ticket_type = 'plugins', $force_refresh = false ) {
-		?>
-		<table class="widefat striped" id="wdd_tickets_table">
-			<thead>
-				<tr>
-					<td><?php _e( 'Status', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'Title' ); ?></td>
-					<td><?php _e( 'Plugin/Theme' ); ?></td>
-					<td><?php _e( 'Type' ); ?></td>
-					<td><?php _e( 'Last Post' ); ?></td>
-					<td><?php _e( 'Last Poster' ); ?></td>
-				</tr>
-			</thead>
-			<tbody>
-		<?php
-			$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
-			$tickets_data = array();
-			$plugin_theme_names = array();
-			
-			$age_limit = ( empty( $this->options['age_limit'] ) ) ? 0 : (int)$this->options['age_limit'];
-			$ctime = time();
-			$age_limit_time = strtotime( "{$age_limit} days ago", $ctime );
-			
-			foreach( $plugins_themes as $plugin_theme ) {
-				// Skip if there are no tickets.
-				if ( empty ( $plugin_theme->tickets_data ) ) {
+	public function generate_tickets_table( $force_refresh = false ) {
+		$result = '';
+		
+		$result .= "\t\t<table class=\"widefat striped wdd-tickets-table\" id=\"wdd_tickets_table\">" . PHP_EOL;
+		$result .= "\t\t\t<thead>" . PHP_EOL;
+		$result .= "\t\t\t\t<tr>" . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Status', 'wp-dev-dashboard' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Title' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Plugin/Theme' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Type' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Last Post' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Last Poster' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t</tr>" . PHP_EOL;
+		$result .= "\t\t\t</thead>" . PHP_EOL;
+		$result .= "\t\t<tbody>" . PHP_EOL;
+
+		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
+		$tickets_data = array();
+		$plugin_theme_names = array();
+		
+		$age_limit = ( empty( $this->options['age_limit'] ) ) ? 0 : (int)$this->options['age_limit'];
+		$ctime = time();
+		$age_limit_time = strtotime( "{$age_limit} days ago", $ctime );
+		
+		foreach( $plugins_themes as $plugin_theme ) {
+			// Skip if there are no tickets.
+			if ( empty ( $plugin_theme->tickets_data ) ) {
+				continue;
+			}
+
+			$plugin_theme_names[$plugin_theme->slug] = $plugin_theme->name;
+			$tickets_data = array_merge( $tickets_data, $plugin_theme->tickets_data );
+
+		}
+
+		uasort( $tickets_data, function( $plugin_1, $plugin_2 ) {
+			return $plugin_1['timestamp'] < $plugin_2['timestamp'];
+		});
+
+		foreach ( $tickets_data as $ticket_data ) {
+
+			if ( empty ( $this->options['show_all_tickets'] ) ) {
+				if ( 'unresolved' != $ticket_data['status'] || true == $ticket_data['closed'] || true == $ticket_data['sticky']) {
 					continue;
 				}
-
-				$plugin_theme_names[$plugin_theme->slug] = $plugin_theme->name;
-				$tickets_data = array_merge( $tickets_data, $plugin_theme->tickets_data );
-
 			}
 
-			uasort( $tickets_data, function( $plugin_1, $plugin_2 ) {
-				return $plugin_1['timestamp'] < $plugin_2['timestamp'];
-			});
-
-			foreach ( $tickets_data as $ticket_data ) {
-
-				if ( empty ( $this->options['show_all_tickets'] ) ) {
-					if ( 'unresolved' != $ticket_data['status'] || true == $ticket_data['closed'] || true == $ticket_data['sticky']) {
-						continue;
-					}
+			if ( $age_limit > 0 ) {
+				if ( $ticket_data['timestamp'] < $age_limit_time ) {
+					continue;
 				}
-
-				if ( $age_limit > 0 ) {
-					if ( $ticket_data['timestamp'] < $age_limit_time ) {
-						continue;
-					}
-				}
-				
-				// Generate status icons.
-				if ( 'resolved' == $ticket_data['status'] ) {
-					$icon_class = 'yes';
-				} else {
-					$icon_class = 'editor-help';
-				}
-
-				$icon_html = sprintf( '<span class="dashicons dashicons-%s" title="%s"></span> ', $icon_class, ucfirst( $ticket_data['status'] ) );
-
-				echo '<tr>' . PHP_EOL;
-				echo '<td>' . $icon_html . '</td>' . PHP_EOL;
-				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
-				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
-				echo '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
-				echo '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] + $this->tz_offset ) . '</td>' . PHP_EOL;
-				printf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['lastposterhref'], $ticket_data['lastposter'], PHP_EOL );
+			}
+			
+			// Generate status icons.
+			if ( 'resolved' == $ticket_data['status'] ) {
+				$icon_class = 'yes';
+			} else {
+				$icon_class = 'editor-help';
 			}
 
-			?>
-			</tbody>
-		</table>
-		<?php
+			$icon_html = sprintf( '<span class="dashicons dashicons-%s" title="%s"></span> ', $icon_class, ucfirst( $ticket_data['status'] ) );
+
+			$result .= '<tr>' . PHP_EOL;
+			$result .= '<td>' . $icon_html . '</td>' . PHP_EOL;
+			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
+			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
+			$result .= '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
+			$result .= '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] + $this->tz_offset ) . '</td>' . PHP_EOL;
+			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['lastposterhref'], $ticket_data['lastposter'], PHP_EOL );
+		}
+
+		$result .= "\t\t\t</tbody>" . PHP_EOL;
+		$result .= "\t\t</table>" . PHP_EOL;
+		
+		return $result;
 	}
 
 	/**
@@ -612,18 +621,17 @@ class WP_Dev_Dashboard_Admin {
 	 */
 	public function get_ajax_content() {
 
-		/**
-		 * Include necessary global: hook_suffix. For some reason this
-		 * doesn't work by default and must be included manually to
-		 * avoid throwing a notice.
-		 */
-		global $hook_suffix;
-
-		// Get paramters to load correct content.
-		$ticket_type = isset( $_POST['ticket_type'] ) ? $_POST['ticket_type'] : 'plugins';
+		// Get parameters to load correct content.
 		$force_refresh = isset( $_POST['force_refresh'] ) ? $_POST['force_refresh'] : false;
 		$current_url = isset( $_POST['current_url'] ) ? $_POST['current_url'] : false;
 
+		$tickets_table = $this->generate_tickets_table( $force_refresh );
+		$stats_table = $this->generate_stats_table();
+		
+		if ( count( $this->error_slugs ) > 0 ) {
+			printf( '<div class="error"><p>%s %s</p></div>', __( 'WP Dev Dashboard error: The following items could not be retrieved from wordpress.org;', 'wp-dev-dashboard' ), implode( ', ', $this->error_slugs ) );
+		}
+		
 		// Output refresh button.
 		$this->do_refresh_button();
 
@@ -633,8 +641,8 @@ class WP_Dev_Dashboard_Admin {
         	<a href="#" class="button" data-wpdd-tab-target="info"><span class="dashicons dashicons-list-view" data-wpdd-tab-target="info"></span> <?php echo __( 'Statistics', 'wp-dev-dashboard '); ?></a>
         </div>
         <div class="wpdd-sub-tab-container">
-        	<div class="wppd-sub-tab wpdd-sub-tab-tickets active"><?php $this->do_ticket_table( $ticket_type, $force_refresh ); // $this->do_meta_boxes( $ticket_type, $force_refresh ); ?></div>
-        	<div class="wppd-sub-tab wpdd-sub-tab-info"><?php $this->output_list_table( $ticket_type, $current_url ); ?></div>
+        	<div class="wppd-sub-tab wpdd-sub-tab-tickets active"><?php echo $tickets_table; ?></div>
+        	<div class="wppd-sub-tab wpdd-sub-tab-info"><?php echo $stats_table; ?></div>
         </div>
         <?php
 
@@ -723,73 +731,72 @@ class WP_Dev_Dashboard_Admin {
 	}
 
 	/**
-	 * Output a list table of plugins/themes.
+	 * Output a list table of plugins/themes stats.
 	 *
 	 * @since 1.0.0
-	 *
-	 * @param string $table_type Type of table to output (plugins|themes)
 	 */
-	public function output_list_table( $table_type = 'plugins', $current_url = null ) {
-?>
-		<table class="widefat striped wdd-stats-table">
-			<thead>
-				<tr>
-					<td><?php _e( 'Title', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'Type', 'wp-dev-dashboard' ); ?>
-					<td><?php _e( 'Version', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'WP Version Tested', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'Rating', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( '# of Reviews', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'Active Installs', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'Downloads', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'Unresolved', 'wp-dev-dashboard' ); ?></td>
-					<td><?php _e( 'Resolved', 'wp-dev-dashboard' ); ?></td>
-				</tr>
-			</thead>
-			<tbody>
-<?php
-			$plugins_themes = $this->get_plugins_themes( $table_type );
+	public function generate_stats_table() {
+		$result = '';
+		
+		$result .= "\t\t<table class=\"widefat striped wdd-stats-table\" id=\"wdd_stats_table\">" . PHP_EOL;
+		$result .= "\t\t\t<thead>" . PHP_EOL;
+		$result .= "\t\t\t\t<tr>" . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Title', 'wp-dev-dashboard' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Type' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Version' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'WP Version Tested' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Rating' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( '# of Reviews' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Active Installs' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Downloads' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Unresolved' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Resolved' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t</tr>" . PHP_EOL;
+		$result .= "\t\t\t</thead>" . PHP_EOL;
+		$result .= "\t\t<tbody>" . PHP_EOL;
 
-			$update_data = get_site_transient( 'update_core' );
-			$wp_branches = $update_data->updates;
+		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
 
-			$wp_version = '';
-			foreach( $wp_branches as $index => $branch ) {
-				if ( 'latest' == $branch->response ) {
-					$wp_version = $wp_branches[ $index ]->version;
+		$update_data = get_site_transient( 'update_core' );
+		$wp_branches = $update_data->updates;
+
+		$wp_version = '';
+		foreach( $wp_branches as $index => $branch ) {
+			if ( 'latest' == $branch->response ) {
+				$wp_version = $wp_branches[ $index ]->version;
+			}
+		}
+	
+		foreach( $plugins_themes as $plugin_theme ) {
+			$result .= '<tr>' . PHP_EOL;
+			$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme->slug . '</td>' . PHP_EOL, $plugin_theme->name );
+			$result .= "<td>{$plugin_theme->type}</td>" . PHP_EOL;
+			$result .= "<td>{$plugin_theme->version}</td>" . PHP_EOL;
+
+			$class = '';
+
+			if ( $wp_version ) {
+				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'plugins' == $table_type ) {
+					$class = 'wpdd-current';
+				} else {
+					$class = 'wpdd-needs-update';
 				}
 			}
+
+			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugins' == $table_type ? $plugin_theme->tested : __( 'N/A', 'wp-dev-dashboard' ) ) );
+			$result .= '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-dev-dashboard' ) ) . '</td>' . PHP_EOL;
+			$result .= "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme->downloaded ) . '</td>' . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme->unresolved_count ) . '</td>' . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme->resolved_count ) . '</td>' . PHP_EOL;
+			$result .= '</tr>' . PHP_EOL;
+		}
+
+		$result .= "\t\t\t</tbody>" . PHP_EOL;
+		$result .= "\t\t</table>" . PHP_EOL;
 		
-			foreach( $plugins_themes as $plugin_theme ) {
-				echo '<tr>';
-    			printf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme->slug . '</td>' . PHP_EOL, $plugin_theme->name );
-				echo "<td>{$plugin_theme->type}</td>" . PHP_EOL;
-				echo "<td>{$plugin_theme->version}</td>" . PHP_EOL;
-
-    			$class = '';
-
-    			if ( $wp_version ) {
-    				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'plugins' == $table_type ) {
-    					$class = 'wpdd-current';
-    				} else {
-    					$class = 'wpdd-needs-update';
-    				}
-    			}
-
-    			printf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugins' == $table_type ? $plugin_theme->tested : __( 'N/A', 'wp-dev-dashboard' ) ) );
-				echo '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-dev-dashboard' ) ) . '</td>' . PHP_EOL;
-				echo "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
-				echo '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
-				echo '<td>' . number_format_i18n( $plugin_theme->downloaded ) . '</td>' . PHP_EOL;
-				echo '<td>' . number_format_i18n( $plugin_theme->unresolved_count ) . '</td>' . PHP_EOL;
-				echo '<td>' . number_format_i18n( $plugin_theme->resolved_count ) . '</td>' . PHP_EOL;
-				echo '</tr>';
-			}
-
-			?>
-			</tbody>
-		</table>
-		<?php
+		return $result;
 	}
 
 	/**
@@ -1095,7 +1102,7 @@ class WP_Dev_Dashboard_Admin {
 		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
 
 		if( is_wp_error( $html ) ) {
-			printf( __( '<div class="error">WP Dev Dashboard error: %s (%s)</div>', 'wp-dev-dashboard' ), $html->get_error_message(), $plugin_theme_slug );
+			$this->error_slugs[ $plugin_theme_slug ] = $plugin_theme_slug;
 			
 			return false;
 		}
@@ -1165,7 +1172,7 @@ class WP_Dev_Dashboard_Admin {
 			$response = wp_remote_retrieve_body( $response );
 
 		} else {
-			return new WP_Error( 'error', sprintf( __( 'Attempt to fetch support forums HTML failed (%s)', 'wp-dev-dashboard' ), $plugin_theme_slug ) );
+			return new WP_Error( 'error', sprintf( __( 'Attempt to fetch support forums HTML failed (%s)', 'wp-dev-dashboard' ), $plugin_theme_slug ), $plugin_theme_slug );
 		}
 
 		return $response;
