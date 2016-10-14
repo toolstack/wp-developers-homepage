@@ -6,11 +6,11 @@
  * A class definition that includes attributes and functions used across both the
  * public-facing side of the site and the dashboard.
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
  * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
  */
 
 /**
@@ -23,11 +23,11 @@
  * version of the plugin.
  *
  * @since      1.0.0
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
- * @author     Mickey Kay Creative mickey@mickeykaycreative.com
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
+ * @author     Greg Ross
  */
-class WP_Dev_Dashboard {
+class WP_Developers_Homepage {
 
 	/**
 	 * The main plugin file.
@@ -44,7 +44,7 @@ class WP_Dev_Dashboard {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      WP_Dev_Dashboard_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      WP_Developers_Homepage_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -80,14 +80,14 @@ class WP_Dev_Dashboard {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      WP_Dev_Dashboard    $instance    The instance of this class.
+	 * @var      WP_Developers_Homepage    $instance    The instance of this class.
 	 */
 	private static $instance = null;
 
 	/**
      * Creates or returns an instance of this class.
      *
-     * @return    WP_Dev_Dashboard    A single instance of this class.
+     * @return    WP_Developers_Homepage    A single instance of this class.
      */
     public static function get_instance( $args = array() ) {
 
@@ -112,9 +112,9 @@ class WP_Dev_Dashboard {
 
 		$this->plugin_file = $args['plugin_file'];
 
-		$this->slug = 'wp-dev-dashboard';
-		$this->name = __( 'WP Dev Dashboard', 'wp-dev-dashboard' );
-		$this->version = '1.3.1';
+		$this->slug = 'wp-developers-homepage';
+		$this->name = __( 'WP Developers Homepage', 'wp-developers-homepage' );
+		$this->version = '1.0.0';
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -129,10 +129,10 @@ class WP_Dev_Dashboard {
 	 *
 	 * Include the following files that make up the plugin:
 	 *
-	 * - WP_Dev_Dashboard_Loader. Orchestrates the hooks of the plugin.
-	 * - WP_Dev_Dashboard_i18n. Defines internationalization functionality.
-	 * - WP_Dev_Dashboard_Admin. Defines all hooks for the dashboard.
-	 * - WP_Dev_Dashboard_Public. Defines all hooks for the public side of the site.
+	 * - WP_Developers_Homepage_Loader. Orchestrates the hooks of the plugin.
+	 * - WP_Developers_Homepage_i18n. Defines internationalization functionality.
+	 * - WP_Developers_Homepage_Admin. Defines all hooks for the dashboard.
+	 * - WP_Developers_Homepage_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -146,13 +146,13 @@ class WP_Dev_Dashboard {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-dev-dashboard-loader.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-developers-homepage-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-dev-dashboard-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-developers-homepage-i18n.php';
 
 		/**
 		 * Common functions.
@@ -162,13 +162,13 @@ class WP_Dev_Dashboard {
 		/**
 		 * The class responsible for defining all actions that occur in the Dashboard.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp-dev-dashboard-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp-developers-homepage-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wp-dev-dashboard-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wp-developers-homepage-public.php';
 
 		/**
 		 * PHP Simple HTML DOM Parser.
@@ -177,14 +177,14 @@ class WP_Dev_Dashboard {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'vendor/autoload.php';
 
-		$this->loader = new WP_Dev_Dashboard_Loader();
+		$this->loader = new WP_Developers_Homepage_Loader();
 
 	}
 
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the WP_Dev_Dashboard_i18n class in order to set the domain and to register the hook
+	 * Uses the WP_Developers_Homepage_i18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
 	 * @since    1.0.0
@@ -192,7 +192,7 @@ class WP_Dev_Dashboard {
 	 */
 	private function set_locale() {
 
-		$plugin_i18n = new WP_Dev_Dashboard_i18n();
+		$plugin_i18n = new WP_Developers_Homepage_i18n();
 		$plugin_i18n->set_domain( $this->slug );
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
@@ -208,7 +208,7 @@ class WP_Dev_Dashboard {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = WP_Dev_Dashboard_Admin::get_instance( $this );
+		$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -217,7 +217,7 @@ class WP_Dev_Dashboard {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_settings_page' );
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'add_settings_fields' );
 
-		$this->loader->add_action( 'wp_ajax_refresh_wpdd', $plugin_admin, 'get_ajax_content' );
+		$this->loader->add_action( 'wp_ajax_refresh_wdh', $plugin_admin, 'get_ajax_content' );
 
 	}
 
@@ -230,7 +230,7 @@ class WP_Dev_Dashboard {
 	 */
 	private function define_public_hooks() {
 
-		// $plugin_public = WP_Dev_Dashboard_Public::get_instance( $this );
+		// $plugin_public = WP_Developers_Homepage_Public::get_instance( $this );
 
 		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -265,7 +265,7 @@ class WP_Dev_Dashboard {
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
-	 * @return    WP_Dev_Dashboard_Loader    Orchestrates the hooks of the plugin.
+	 * @return    WP_Developers_Homepage_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
 		return $this->loader;

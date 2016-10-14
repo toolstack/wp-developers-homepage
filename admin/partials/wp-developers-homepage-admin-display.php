@@ -5,11 +5,11 @@
  *
  * This file is used to markup the public-facing aspects of the plugin.
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
  * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/admin/partials
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/admin/partials
  */
 ?>
 

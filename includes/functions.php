@@ -6,11 +6,11 @@
  * Function definition that includes attributes and functions used across both the
  * public-facing side of the site and the dashboard.
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
- * @since      2.0.0
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
+ * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
  */
 
 /**
@@ -18,15 +18,15 @@
  *
  * This is used to define functions that are required for the plugin.
  *
- * @since      2.0.0
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
- * @author     Greg Ross greg@toolstack.com
+ * @since      1.0.0
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
+ * @author     Greg Ross
  */
 
-function wdd_run_wp_cron() {
+function wdh_run_wp_cron() {
 
-	$plugin_admin = WP_Dev_Dashboard_Admin::get_instance( $this );
+	$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
 
 	$plugin_admin->run_wp_cron();
 		

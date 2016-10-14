@@ -3,7 +3,7 @@
  * included in this file.
  */
 
-#wp-dev-dashboard-settings .nav-tab-wrapper .dashicons {
+#wp-developers-homepage-settings .nav-tab-wrapper .dashicons {
 	position: relative;
 	bottom: -0.1em;
 	font-size: 1.3em;
@@ -11,112 +11,112 @@
 
 /* Refresh Buttons
 --------------------------------------------- */
-.wpdd-refresh-button-container {
+.wdh-refresh-button-container {
 	float: right;
 }
 
-#wp-dev-dashboard-settings .spinner {
+#wp-developers-homepage-settings .spinner {
 	display: none;
 	float: none;
 }
 
-#wp-dev-dashboard-settings .spinner.is-active {
+#wp-developers-homepage-settings .spinner.is-active {
 	display: inline-block;
 }
 
-.wpdd-loading-div {
+.wdh-loading-div {
 	margin: 1em 0;
 }
 
-.wpdd-loading-div span {
+.wdh-loading-div span {
 	margin-top: 0;
 	vertical-align: middle;
 }
 
 /* Content - Sub Tabs
 --------------------------------------------- */
-.wpdd-ajax-container {
+.wdh-ajax-container {
 	margin: 1em 0;
 }
 
-.wpdd-sub-tab-nav {
+.wdh-sub-tab-nav {
 	font-size: 0;
 }
 
-.wpdd-sub-tab-nav .button {
+.wdh-sub-tab-nav .button {
 	margin: 0 !important;
 }
 
-.wpdd-sub-tab-nav .button:first-child {
+.wdh-sub-tab-nav .button:first-child {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
 
-.wpdd-sub-tab-nav .button:not(:first-child) {
+.wdh-sub-tab-nav .button:not(:first-child) {
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
 }
 
-#wp-dev-dashboard-settings .nav-tab-wrapper .button .dashicons {
+#wp-developers-homepage-settings .nav-tab-wrapper .button .dashicons {
 	bottom: 0.09em;
 	width: 1.1em;
 	height: auto;
 	vertical-align: middle;
 }
 
-.wpdd-sub-tab-container {
+.wdh-sub-tab-container {
 	margin: 1em 0;
 }
 
-.wppd-sub-tab {
+.wdh-sub-tab {
 	display: none;
 }
 
-.wppd-sub-tab.active {
+.wdh-sub-tab.active {
 	display: block;
 }
 
 /* Content - Metaboxes
 --------------------------------------------- */
-.wp-dev-dashboard-metaboxes {
+.wp-developers-homepage-metaboxes {
 	overflow: hidden;
 	margin-top: 1em;
 }
 
-.wpdd-ticket-count {
+.wdh-ticket-count {
 	float: right;
 	margin-right: 1em;
 }
 
-.dashicons.wpdd-resolved,
-li.wpdd-resolved .dashicons {
+.dashicons.wdh-resolved,
+li.wdh-resolved .dashicons {
 	color: #7ad03a;
 }
 
-.dashicons.wpdd-unresolved,
-li.wpdd-unresolved .dashicons,
-.wpdd-needs-update {
+.dashicons.wdh-unresolved,
+li.wdh-unresolved .dashicons,
+.wdh-needs-update {
 	color: #dd3d36;
 }
 
-.wp-dev-dashboard-metaboxes .postbox:last-child {
+.wp-developers-homepage-metaboxes .postbox:last-child {
 	margin-bottom: 0;
 }
 
 /* Content - Table
 --------------------------------------------- */
-#wp-dev-dashboard-settings .tablenav {
+#wp-developers-homepage-settings .tablenav {
 	display: none;
 }
 
-#wp-dev-dashboard-settings .wp-list-table .sorting-indicator {
+#wp-developers-homepage-settings .wp-list-table .sorting-indicator {
 	display: block;
 	opacity: 0;
 	filter: alpha(opacity=0);
 }
 
-#wp-dev-dashboard-settings .wp-list-table th.sorted .sorting-indicator,
-#wp-dev-dashboard-settings .wp-list-table a:hover .sorting-indicator {
+#wp-developers-homepage-settings .wp-list-table th.sorted .sorting-indicator,
+#wp-developers-homepage-settings .wp-list-table a:hover .sorting-indicator {
 	opacity: 1;
 	filter: alpha(opacity=100);
 }

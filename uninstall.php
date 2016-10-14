@@ -19,10 +19,10 @@
  * For more information, see the following discussion:
  * https://github.com/tommcfarlin/WordPress-Plugin-Boilerplate/pull/123#issuecomment-28541913
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
  * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
+ * @package    WP_Developers_Homepage
  */
 
 // If uninstall not called from WordPress, then exit.
