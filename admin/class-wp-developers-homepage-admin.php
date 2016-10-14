@@ -89,7 +89,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Fields to fetch via the plugin/theme APIs.
 	 *
-	 * @since    1.2.0
+	 * @since    1.0.0
 	 * @access   private
 	 * @var      string    $api_fields    Fields to fetch via the plugin/theme APIs
 	 */

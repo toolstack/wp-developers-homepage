@@ -114,7 +114,7 @@ class WP_Developers_Homepage {
 
 		$this->slug = 'wp-developers-homepage';
 		$this->name = __( 'WP Developers Homepage', 'wp-developers-homepage' );
-		$this->version = '1.3.1';
+		$this->version = '1.0.0';
 
 		$this->load_dependencies();
 		$this->set_locale();
