@@ -626,7 +626,7 @@ class WP_Dev_Dashboard_Admin {
 		$current_url = isset( $_POST['current_url'] ) ? $_POST['current_url'] : false;
 
 		$tickets_table = $this->generate_tickets_table( $force_refresh );
-		$stats_table = $this->generate_stats_table();
+		$stats_table = $this->generate_stats_table( $force_refresh );
 		
 		if ( count( $this->error_slugs ) > 0 ) {
 			printf( '<div class="error"><p>%s %s</p></div>', __( 'WP Dev Dashboard error: The following items could not be retrieved from wordpress.org;', 'wp-dev-dashboard' ), implode( ', ', $this->error_slugs ) );
@@ -735,7 +735,7 @@ class WP_Dev_Dashboard_Admin {
 	 *
 	 * @since 1.0.0
 	 */
-	public function generate_stats_table() {
+	public function generate_stats_table( $force_refresh = false ) {
 		$result = '';
 		
 		$result .= "\t\t<table class=\"widefat striped wdd-stats-table\" id=\"wdd_stats_table\">" . PHP_EOL;
@@ -776,14 +776,14 @@ class WP_Dev_Dashboard_Admin {
 			$class = '';
 
 			if ( $wp_version ) {
-				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'plugins' == $table_type ) {
+				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'plugin' == $plugin_theme->type ) {
 					$class = 'wpdd-current';
 				} else {
 					$class = 'wpdd-needs-update';
 				}
 			}
 
-			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugins' == $table_type ? $plugin_theme->tested : __( 'N/A', 'wp-dev-dashboard' ) ) );
+			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugin' == $plugin_theme->type ? $plugin_theme->tested : __( 'N/A', 'wp-dev-dashboard' ) ) );
 			$result .= '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-dev-dashboard' ) ) . '</td>' . PHP_EOL;
 			$result .= "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
 			$result .= '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
@@ -903,30 +903,6 @@ class WP_Dev_Dashboard_Admin {
 		$html .= '</ul>';
 
 		return $html;
-
-	}
-
-	/**
-	 * [Unused] Generate HTML for output for a plugin's/theme's meta data.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param stdClass Object $plugin_theme Plugin/theme object.
-	 *
-	 * @return string HTML output of plugin/theme meta data.
-	 */
-	public function get_plugin_theme_data_html( $plugin_theme ) {
-
-		ob_start();
-		?>
-		<ul class="plugin-theme-data">
-			<li class="version"><?php printf( '<h4>%s</h4>%s', esc_html__( 'Version', 'wp-dev-dashboard' ), $plugin_theme->version ); ?></li>
-			<li class="wp-versions"><?php printf( '<h4>%s</h4>%s - %s', esc_html__( 'WP Versions', 'wp-dev-dashboard' ), $plugin_theme->requires, $plugin_theme->tested ); ?></li>
-			<li class="rating"><?php printf( '<h4>%s</h4>%s', esc_html__( 'Rating', 'wp-dev-dashboard' ), $plugin_theme->rating ); ?></li>
-		</ul>
-		<?php
-
-		return ob_get_clean();
 
 	}
 
