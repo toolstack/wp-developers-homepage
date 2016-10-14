@@ -3,11 +3,11 @@
 /**
  * Register all actions and filters for the plugin
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
  * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
  */
 
 /**
@@ -17,11 +17,11 @@
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
- * @author     Mickey Kay Creative mickey@mickeykaycreative.com
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
+ * @author     Greg Ross
  */
-class WP_Dev_Dashboard_Loader {
+class WP_Developers_Homepage_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

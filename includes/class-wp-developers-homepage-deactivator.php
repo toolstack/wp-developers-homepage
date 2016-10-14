@@ -3,11 +3,11 @@
 /**
  * Fired during plugin deactivation
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
  * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
  */
 
 /**
@@ -16,11 +16,11 @@
  * This class defines all code necessary to run during the plugin's deactivation.
  *
  * @since      1.0.0
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
- * @author     Mickey Kay Creative mickey@mickeykaycreative.com
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
+ * @author     Greg Ross
  */
-class WP_Dev_Dashboard_Deactivator {
+class WP_Developers_Homepage_Deactivator {
 
 	/**
 	 * Short Description. (use period)
@@ -31,7 +31,7 @@ class WP_Dev_Dashboard_Deactivator {
 	 */
 	public static function deactivate() {
 
-	$plugin_admin = WP_Dev_Dashboard_Admin::get_instance( $this );
+	$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
 
 		$plugin_admin->clear_wp_cron();
 

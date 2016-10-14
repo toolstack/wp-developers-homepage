@@ -3,11 +3,11 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
  * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/public
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/public
  */
 
 /**
@@ -16,18 +16,18 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the dashboard-specific stylesheet and JavaScript.
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/public
- * @author     Mickey Kay Creative mickey@mickeykaycreative.com
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/public
+ * @author     Greg Ross
  */
-class WP_Dev_Dashboard_Public {
+class WP_Developers_Homepage_Public {
 
 	/**
 	 * The main plugin instance.
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      WP_Dev_Dashboard    $plugin    The main plugin instance.
+	 * @var      WP_Developers_Homepage    $plugin    The main plugin instance.
 	 */
 	private $plugin;
 
@@ -63,14 +63,14 @@ class WP_Dev_Dashboard_Public {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      WP_Dev_Dashboard_Public    $instance    The instance of this class.
+	 * @var      WP_Developers_Homepage_Public    $instance    The instance of this class.
 	 */
 	private static $instance = null;
 
 	/**
      * Creates or returns an instance of this class.
      *
-     * @return    WP_Dev_Dashboard_Public    A single instance of this class.
+     * @return    WP_Developers_Homepage_Public    A single instance of this class.
      */
     public static function get_instance( $plugin ) {
  
@@ -109,15 +109,15 @@ class WP_Dev_Dashboard_Public {
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in WP_Dev_Dashboard_Loader as all of the hooks are defined
+		 * defined in WP_Developers_Homepage_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The WP_Dev_Dashboard_Loader will then create the relationship
+		 * The WP_Developers_Homepage_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'css/wp-dev-dashboard-public.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'css/wp-developers-homepage-public.css', array(), $this->version, 'all' );
 
 	}
 
@@ -132,15 +132,15 @@ class WP_Dev_Dashboard_Public {
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in WP_Dev_Dashboard_Loader as all of the hooks are defined
+		 * defined in WP_Developers_Homepage_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The WP_Dev_Dashboard_Loader will then create the relationship
+		 * The WP_Developers_Homepage_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'js/wp-dev-dashboard-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'js/wp-developers-homepage-public.js', array( 'jquery' ), $this->version, false );
 
 	}
 

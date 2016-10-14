@@ -3,49 +3,49 @@
 
 	// Load main content via Ajax on inital page load.
 	$( document ).ready( function() {
-		wpdd_load_ajax_content();
+		wdh_load_ajax_content();
 	});
 
 	// Trigger actions after Ajax load.
-	$( document ).on( 'wpddRefreshAfter', function() {
+	$( document ).on( 'wdhRefreshAfter', function() {
 
 		// Open correct tab.
 		if ( location.href.indexOf( 'orderby' ) >= 0 ) {
-			$( '.button[data-wpdd-tab-target="info"]' ).addClass( 'red') ;
-			wpdd_toggle_tabs( $( '.button[data-wpdd-tab-target="info"]' ) );
+			$( '.button[data-wdh-tab-target="info"]' ).addClass( 'red') ;
+			wdh_toggle_tabs( $( '.button[data-wdh-tab-target="info"]' ) );
 		}
 
 		// Hook up responsive row expand/collapse functionality.
-		$( '.wpdd-sub-tab-info tbody' ).on( 'click', '.toggle-row', function() {
+		$( '.wdh-sub-tab-info tbody' ).on( 'click', '.toggle-row', function() {
 			$( this ).closest( 'tr' ).toggleClass( 'is-expanded' );
 		});
 
 	});
 
 	// Hook up refresh button functionality.
-	$( '#wp-dev-dashboard-settings' ).on( 'click', '.wpdd-button-refresh', function( e ) {
+	$( '#wp-developers-homepage-settings' ).on( 'click', '.wdh-button-refresh', function( e ) {
 		e.preventDefault();
 
 		var button = $( this );
-		wpdd_load_ajax_content( true, button );
+		wdh_load_ajax_content( true, button );
 
 	});
 
 
-	$( '#wp-dev-dashboard-settings' ).on( 'click', '.wpdd-sub-tab-nav .button', function( e ) {
+	$( '#wp-developers-homepage-settings' ).on( 'click', '.wdh-sub-tab-nav .button', function( e ) {
 
 		e.preventDefault();
 
 		var button = $( this );
 
-		wpdd_toggle_tabs( button );
+		wdh_toggle_tabs( button );
 
 	});
 
 	// Fix broken table-sorting links after Ajax.
-	$( document ).on( 'wpddRefreshAfter', function() {
+	$( document ).on( 'wdhRefreshAfter', function() {
 
-		$( '.wppd-sub-tab a[href*="admin-ajax.php"]' ).each( function() {
+		$( '.wdh-sub-tab a[href*="admin-ajax.php"]' ).each( function() {
 			var $link,
 				linkIdentifier = 'admin-ajax.php',
 				href,
@@ -73,7 +73,7 @@
 	 * @param {bool} forceRefresh Whether or not to force a cache-busting fetch.
 	 * @param {JQuery} button Button used to call refresh, if used.
 	 */
-	var wpdd_load_ajax_content = function( forceRefresh, button ) {
+	var wdh_load_ajax_content = function( forceRefresh, button ) {
 
 		var $ajaxContainer,
 			objectType,
@@ -81,9 +81,9 @@
 			data;
 
 		// Set up all variables and objects.
-		$ajaxContainer = $( '.wpdd-ajax-container' );
-		objectType = $ajaxContainer.attr( 'data-wpdd-object-type' );
-		ticketType = $ajaxContainer.attr( 'data-wpdd-ticket-type' );
+		$ajaxContainer = $( '.wdh-ajax-container' );
+		objectType = $ajaxContainer.attr( 'data-wdh-object-type' );
+		ticketType = $ajaxContainer.attr( 'data-wdh-ticket-type' );
 
 		// Set up button stuff.
 		if ( button ) {
@@ -93,10 +93,10 @@
 				spinner,
 				buttons,
 
-			buttons = $( '.wpdd-button-refresh' );
+			buttons = $( '.wdh-button-refresh' );
 			buttonOrigText = button.val();
-			refreshingTexts = wpddSettings.fetch_messages;
-			buttonRefreshingText = buttons.attr( 'data-wpdd-refreshing-text' );
+			refreshingTexts = wdhSettings.fetch_messages;
+			buttonRefreshingText = buttons.attr( 'data-wdh-refreshing-text' );
 			spinner = buttons.next( '.spinner' ).toggleClass( 'is-active');
 
 			// Get refresh message.
@@ -106,7 +106,7 @@
 		}
 
 		data = {
-			'action':         'refresh_wpdd',
+			'action':         'refresh_wdh',
 			'object_type':    objectType,
 			'ticket_type':    ticketType,
 			'force_refresh':  forceRefresh,
@@ -114,20 +114,20 @@
 		};
 
 		// Trigger event before refresh.
-		$( document ).trigger( 'wpddRefreshBefore' );
+		$( document ).trigger( 'wdhRefreshBefore' );
 
 		// Run Ajax request.
 		jQuery.post( ajaxurl, data, function( response ) {
 			var lastSortList, lastTicketsOrder, lastStatsOrder;
 			
-			lastSortList = $( '#wdd_tickets_table' );
+			lastSortList = $( '#wdh_tickets_table' );
 			if( lastSortList.length > 0 ) {
 				lastTicketsOrder = lastSortList[0].config.sortList;
 			} else {
 				lastTicketsOrder = [[4,1]];
 			}
 			
-			lastSortList = $( '.wdd-stats-table' );
+			lastSortList = $( '.wdh-stats-table' );
 			if( lastSortList.length > 0 ) {
 				lastStatsOrder = lastSortList[0].config.sortList;
 			} else {
@@ -141,22 +141,22 @@
 				spinner.toggleClass( 'is-active');
 			}
 
-			$( '#wdd_tickets_table' ).tablesorter({ 
+			$( '#wdh_tickets_table' ).tablesorter({ 
 		        sortList: lastTicketsOrder 
 			    }); 
 
-			$( '.wdd-stats-table' ).tablesorter({ 
+			$( '.wdh-stats-table' ).tablesorter({ 
 		        sortList: lastStatsOrder 
 			    }); 
 
 			// Trigger event after refresh.
-			$( document ).trigger( 'wpddRefreshAfter' );
+			$( document ).trigger( 'wdhRefreshAfter' );
 
 		});
 
 	}
 
-	var wpdd_toggle_tabs = function( button ) {
+	var wdh_toggle_tabs = function( button ) {
 
 		var targetTabClass,
 			$tabsContainer;
@@ -168,11 +168,11 @@
 			button.addClass( 'button-primary' ).siblings( '.button' ).removeClass( 'button-primary' );
 
 			// Toggle visibility of tabs.
-			targetTabClass = button.attr( 'data-wpdd-tab-target' );
-			$tabsContainer = $( '.wpdd-sub-tab-container' );
+			targetTabClass = button.attr( 'data-wdh-tab-target' );
+			$tabsContainer = $( '.wdh-sub-tab-container' );
 
-			$tabsContainer.find( '.wppd-sub-tab' ).removeClass( 'active' );
-			$tabsContainer.find( '.wpdd-sub-tab-' + targetTabClass ).addClass( 'active' );
+			$tabsContainer.find( '.wdh-sub-tab' ).removeClass( 'active' );
+			$tabsContainer.find( '.wdh-sub-tab-' + targetTabClass ).addClass( 'active' );
 
 		}
 

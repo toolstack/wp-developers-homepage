@@ -6,11 +6,11 @@
  * Loads and defines the internationalization files for this plugin
  * so that it is ready for translation.
  *
- * @link       http://wordpress.org/plugins/wp-dev-dashboard
+ * @link       http://wordpress.org/plugins/wp-developers-homepage
  * @since      1.0.0
  *
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
  */
 
 /**
@@ -20,11 +20,11 @@
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    WP_Dev_Dashboard
- * @subpackage WP_Dev_Dashboard/includes
- * @author     Mickey Kay Creative mickey@mickeykaycreative.com
+ * @package    WP_Developers_Homepage
+ * @subpackage WP_Developers_Homepage/includes
+ * @author     Greg Ross
  */
-class WP_Dev_Dashboard_i18n {
+class WP_Developers_Homepage_i18n {
 
 	/**
 	 * The domain specified for this plugin.
