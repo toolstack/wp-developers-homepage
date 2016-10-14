@@ -124,14 +124,14 @@
 			if( lastSortList.length > 0 ) {
 				lastTicketsOrder = lastSortList[0].config.sortList;
 			} else {
-				lastTicketsOrder = [4,1];
+				lastTicketsOrder = [[4,1]];
 			}
 			
 			lastSortList = $( '.wdd-stats-table' );
 			if( lastSortList.length > 0 ) {
 				lastStatsOrder = lastSortList[0].config.sortList;
 			} else {
-				lastStatsOrder = [0,0];
+				lastStatsOrder = [[0,0]];
 			}
 
 			$ajaxContainer.fadeTo( 'slow', 1 ).html( response );
@@ -142,13 +142,11 @@
 			}
 
 			$( '#wdd_tickets_table' ).tablesorter({ 
-		        // sort on the date column, order dsc 
-		        sortList: [lastTicketsOrder] 
+		        sortList: lastTicketsOrder 
 			    }); 
 
 			$( '.wdd-stats-table' ).tablesorter({ 
-		        // sort on the date column, order dsc 
-		        sortList: [lastStatsOrder] 
+		        sortList: lastStatsOrder 
 			    }); 
 
 			// Trigger event after refresh.
