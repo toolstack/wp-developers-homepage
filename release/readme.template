@@ -1,6 +1,6 @@
 === WP Developers Homepage ===
 Contributors: GregRoss
-Donate link: http://wordpress.org/plugins/wp-dev-dashboard
+Donate link: http://wordpress.org/plugins/wp-developers-homepage
 Tags: developers, plugin, theme, unresolved, support, requests, tickets
 Requires at least: 3.5
 Tested up to: {{WP_VERSION}}
@@ -12,42 +12,36 @@ The better tool for monitoring your plugins & themes, including support requests
 
 == Description ==
 
-WP Dev Dashboard takes improves upon the default plugin/theme interfaces for authors, and allows you to easily:
+WP Developers Homepage provides a central place for developers of WordPress plugins and themes to see their information:
 
 1. View and respond to all of your unresolved plugin & theme support requests.
 2. View useful statistics for all of your plugins & themes.
 
-The default wordpress.org plugin/theme author dashboards can be difficult to parse, particularly if you have authored numerous plugins and/or themes that generate a large number of support requests. This plugin allows you to easily view and respond to your unresolved plugin and theme support requests in a simple, easy-to-use interface. Additionally, you can view *all* of your plugin/theme statistics (version, WP compatibility, downloads, ratings, etc) in a sortable table that makes side-by-side comparison a cinch.
-
 = Features =
-* Displays plugin and theme support requests in sortable, collapsible metaboxes for ease of use.
+* Displays plugin and theme support requests in a sortable, collapsible table for ease of use.
 * Displays all plugins and themes in a sortable, easy-to-parse table.
 * Select which plugins and themes to show by username and/or slug.
 * Choose whether to show all support tickets, or just unresolved ones.
 * Implements caching to reduce load time for plugin and theme support ticket information.
 * Includes cache-busting "refresh" option to force refresh plugin and theme support ticket data.
-
-= Coming soon. . . =
-WP Dev Dashboard is intended to be the go-to resource for WordPress plugin and theme authors looking for a better management experience. The below list includes additional features for future development, features that are intended to make WordPress developers' lives as easy as possible. If you have an idea for a feature you'd like to see, please submit it via the [support forum](https://wordpress.org/support/plugin/wp-dev-dashboard).
-
-* Import unresolved Github issues as well as standard wordpress.org forum tickets.
+* Exclusion of plugins and themes.
+* Additional information on tickets, including last poster and time.
+* Set an age limit for the tickets displayed.
+* Set the timeout before new data is loaded.
+* Schedule a WP Cron job to load the data in the background.
 
 == Installation ==
 
-1. Install the plugin.
-2. Navigate to **Dev Dashboard** in the admin menu.
+1. Install the plugin from the wordpress.org plugin directory.
+2. Go to Settings->WP Developers Dashboard in the WP admin menu.
 3. Enter your wordpress.org username in the Settings tab.
-4. After a moment, your plugin & theme data will load in corresponding tabs.
-5. Order and collapse/expand your plugin and theme metaboxes as desired - their state will be saved.
-6. Resolve some support requests!
-
+4. Go to the WP Developers Dashboard in the WP admin menu.
 
 == Screenshots ==
 
-1. Viewing support requests for plugins/themes.
-2. The easy-to-parse plugin/theme statistics tables.
-3. WP Dev Dashboard's settings.
-
+1. Support tickets for plugins/themes.
+2. Statistics for plugins/themes.
+3. Settings page.
 
 == Changelog ==
 
