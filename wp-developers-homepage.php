@@ -43,6 +43,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function activate_wp_developers_homepage() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp-developers-homepage-activator.php';
+	
 	WP_Developers_Homepage_Activator::activate();
 }
 
@@ -52,6 +53,7 @@ function activate_wp_developers_homepage() {
  */
 function deactivate_wp_developers_homepage() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp-developers-homepage-deactivator.php';
+	
 	WP_Developers_Homepage_Deactivator::deactivate();
 }
 

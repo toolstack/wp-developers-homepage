@@ -31,7 +31,7 @@ class WP_Developers_Homepage_Deactivator {
 	 */
 	public static function deactivate() {
 
-	$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
+	$plugin_admin = WP_Developers_Homepage_Admin::get_instance();
 
 		$plugin_admin->clear_wp_cron();
 
