@@ -707,6 +707,12 @@ class WP_Dev_Dashboard_Admin {
 
 			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
 
+			foreach ( $this->error_slugs as $slug ) {
+				if ( array_key_exists( $slug, $data[ $ticket_type ] ) ) {
+					$plugins_themes[ $slug ] = $data[ $ticket_type ][ $slug ];
+				}
+			}
+			
 			if ( $plugins_themes ) {
 
 				/**
@@ -957,13 +963,15 @@ class WP_Dev_Dashboard_Admin {
 		$plugins_themes_by_user = array();
 
 		if ( $data && ! is_wp_error( $data ) ) {
-			$plugins_themes_by_user = ( 'plugins' == $ticket_type ) ? $data->plugins : $data->themes;
-		}
-
-		// Exclude the slugs the user has told us to.
-		foreach( $plugins_themes_by_user as $key => $value ) {
-			if ( in_array( $value->slug, $exclude_slugs ) ) {
-				unset( $plugins_themes_by_user[$key] );
+			$slug_data = ( 'plugins' == $ticket_type ) ? $data->plugins : $data->themes;
+			
+			// Use the slug as the array index to make it easier later and handle the exclusions.
+			foreach ( $slug_data as $item ) {
+				if ( in_array( $item->slug, $excluded_slugs ) ) {
+					continue;
+				}
+				
+				$plugins_themes_by_user[ $item->slug ] = $item;
 			}
 		}
 
