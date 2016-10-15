@@ -112,7 +112,7 @@ class WP_Developers_Homepage_Admin {
 	 * @access   private
 	 * @var      WP_Developers_Homepage_Admin    $instance    The instance of this class.
 	 */
-	private $data_slug = 'wdh_wordpress_data';
+	private $data_slug = 'wdh_remote_data';
 
 	/**
 	 * The time stamp of the last themes ticekts update.
@@ -179,6 +179,7 @@ class WP_Developers_Homepage_Admin {
 		$this->plugin_name = $this->plugin->get( 'name' );
 		$this->version = $this->plugin->get( 'version' );
 		$this->options = (array)get_option( $this->plugin_slug );
+		$this->error_slugs = array();
 		$this->js_data = array(
 			'fetch_messages' => array(
 				__( 'Fetching data, thanks for your patience. . .', 'wp-developers-homepage' ),
@@ -396,6 +397,18 @@ class WP_Developers_Homepage_Admin {
 		);
 
 		add_settings_field(
+			'github_repos', // ID
+			__( 'GitHub repos', 'wp-developers-homepage' ), // Title
+			array( $this, 'render_text_input' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'github_repos',
+				'description' => __( 'Comma-separated list of GitHub repos to include, use the user/repo format for each.', 'wp-developers-homepage' ),
+			)
+		);
+
+		add_settings_field(
 			'show_all_tickets', // ID
 			__( 'Show all tickets', 'wp-developers-homepage' ), // Title
 			array( $this, 'render_checkbox' ), // Callback
@@ -520,7 +533,7 @@ class WP_Developers_Homepage_Admin {
 		);
 		?>
 		<div class="wdh-refresh-button-container">
-			<?php submit_button( esc_attr__( 'Reload from wordpress.org', 'wp-developers-homepage' ), 'button wdh-button-refresh', '', false, $refresh_button_atts ); ?><span class="spinner"></span>
+			<?php submit_button( esc_attr__( 'Reload remote data', 'wp-developers-homepage' ), 'button wdh-button-refresh', '', false, $refresh_button_atts ); ?><span class="spinner"></span>
 		</div>
 		<?php
 
@@ -553,7 +566,7 @@ class WP_Developers_Homepage_Admin {
 		$result .= "\t\t\t</thead>" . PHP_EOL;
 		$result .= "\t\t<tbody>" . PHP_EOL;
 
-		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
+		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ), $this->get_plugins_themes( 'github', $force_refresh ) );
 		$tickets_data = array();
 		$plugin_theme_names = array();
 		
@@ -598,12 +611,13 @@ class WP_Developers_Homepage_Admin {
 			}
 
 			$icon_html = sprintf( '<span class="dashicons dashicons-%s" title="%s"></span> ', $icon_class, ucfirst( $ticket_data['status'] ) );
+			$repo_link = ( 'github' == $ticket_data['type'] ) ? 'https://github.com/' : 'https://wordpress.org/plugins/';
 
 			$result .= '<tr>' . PHP_EOL;
 			$result .= '<td>' . $icon_html . '</td>' . PHP_EOL;
 			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
-			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
-			$result .= '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
+			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $repo_link . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
+			$result .= '<td>' . $ticket_data['type'] . '</td>' . PHP_EOL;
 			$result .= '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] + $this->tz_offset ) . '</td>' . PHP_EOL;
 			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['lastposterhref'], $ticket_data['lastposter'], PHP_EOL );
 		}
@@ -678,8 +692,10 @@ class WP_Developers_Homepage_Admin {
 			$data = array();
 			$data['plugins'] = array();
 			$data['themes'] = array();
+			$data['github'] = array();
 			$data['plugins_timestamp'] = 0;
 			$data['themes_timestamp'] = 0;
+			$data['github_timestamp'] = 0;
 		} else {
 			$this->last_data_update = $data['plugins_timestamp'] > $data['themes_timestamp'] ? $data['plugins_timestamp'] : $data['themes_timestamp'];
 		}
@@ -761,7 +777,7 @@ class WP_Developers_Homepage_Admin {
 		$result .= "\t\t\t</thead>" . PHP_EOL;
 		$result .= "\t\t<tbody>" . PHP_EOL;
 
-		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
+		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ), $this->get_plugins_themes( 'github', $force_refresh )  );
 
 		$update_data = get_site_transient( 'update_core' );
 		$wp_branches = $update_data->updates;
@@ -822,14 +838,17 @@ class WP_Developers_Homepage_Admin {
 
 		// Get any plugins/themes that are manually set via the plugin settings.
 		$plugins_themes_from_setting = $this->get_plugins_themes_from_settings( $ticket_type );
+		
+		// Get the github repos.
+		$plugins_themes_from_github = $this->get_plugins_themes_from_github();
 
 		// Merge plugins/themes for 1. user and 2. manually set in settings.
-		$plugins_themes = array_merge( $plugins_themes_by_user, $plugins_themes_from_setting );
+		$plugins_themes = array_merge( $plugins_themes_by_user, $plugins_themes_from_setting, $plugins_themes_from_github );
 
 		// Loop through all plugins/themes.
 		foreach ( $plugins_themes as $index => $plugins_theme ) {
 
-			$plugins_themes[ $index ]->type = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+			$plugins_themes[ $index ]->type = ucfirst( $plugins_theme->type );
 
 			// Initialize ticket count to zero in case we have to return early.
 			$plugins_themes[ $index ]->unresolved_count = 0;
@@ -982,12 +1001,18 @@ class WP_Developers_Homepage_Admin {
 	public function get_plugin_theme_data_by_slug( $slug, $ticket_type = 'plugins' ) {
 
 		// Require file that includes plugin API functions.
-		if ( 'plugins' == $ticket_type ) {
+		if ( 'github' == $ticket_type ) {
+			$data = (object) array( 'slug' => $slug, 'name' => $slug, 'type' => 'github', 'version' => __( 'unknown', 'wp-developer-homepage' ), 'tested' => __( 'unknown', 'wp-developer-homepage' ), 'rating' => __( 'unknown', 'wp-developer-homepage' ), 'num_ratings' => __( 'unknown', 'wp-developer-homepage' ), 'downloaded' => __( 'unknown', 'wp-developer-homepage' ), 'active_installs' => __( 'unknown', 'wp-developer-homepage' ) );
+			
+			return $data;
+		} else if ( 'plugins' == $ticket_type ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+			
 			$query_function = 'plugins_api';
 			$query_action = 'plugin_information';
 		} else {
 			require_once ABSPATH . 'wp-admin/includes/theme.php';
+			
 			$query_function = 'themes_api';
 			$query_action = 'theme_information';
 		}
@@ -999,6 +1024,8 @@ class WP_Developers_Homepage_Admin {
 
 		$data = call_user_func( $query_function, $query_action, $args );
 
+		$data->type = ucfirst( $ticket_type );
+		
 		return $data;
 
 	}
@@ -1047,6 +1074,45 @@ class WP_Developers_Homepage_Admin {
 	}
 
 	/**
+	 * Get array of github repos manually specified in the plugin settings.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array Array of plugin/theme slugs.
+	 */
+	public function get_plugins_themes_from_github() {
+
+		$plugins_themes_string = ( ! empty( $this->options['github_repos'] ) ) ? $this->options['github_repos'] : '';
+
+		// Remove whitespace from string.
+		$plugins_themes_string = str_replace( ' ', '', $plugins_themes_string );
+
+		// Return empty array if there is no settings data to parse.
+		if ( empty( $plugins_themes_string ) ) {
+			return array();
+		}
+
+		// Convert to array from comma-separated list.
+		$plugins_themes_array = explode( ',', $plugins_themes_string );
+
+		// Trim all the elements in the exclusion list.
+		$plugins_themes_array = array_map( 'trim', $plugins_themes_array );
+
+		// Create array of objects to match that returned by the plugin/theme API.
+		$plugins_themes = array();
+		foreach ( $plugins_themes_array as $plugin_theme_slug ) {
+			$plugin_theme_data = $this->get_plugin_theme_data_by_slug( $plugin_theme_slug, 'github' );
+
+			if ( $plugin_theme_data && ! is_wp_error( $plugin_theme_data ) ) {
+				$plugins_themes[] = $this->get_plugin_theme_data_by_slug( $plugin_theme_slug, 'github' );
+			}
+
+		}
+
+		return $plugins_themes;
+	}
+
+	/**
 	 * Get unresolved ticket data for a specific plugin/theme.
 	 *
 	 * @since 1.0.0
@@ -1082,6 +1148,30 @@ class WP_Developers_Homepage_Admin {
 	 * @return array Array of ticket data.
 	 */
 	public function get_unresolved_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
+
+		switch( $ticket_type ) {
+			case 'github':
+				return $this->get_unresolved_github_tickets_for_page( $plugin_theme_slug, $ticket_type, $page_num );
+				
+				break;
+			default:
+				return $this->get_unresolved_wordpress_tickets_for_page( $plugin_theme_slug, $ticket_type, $page_num );
+		}
+		
+	}
+
+	/**
+	 * Get unresolved ticket for a specific page of a plugin/theme wordpress support forum.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $plugin_theme_slug Plugin/theme slug.
+	 * @param string $ticket_type       plugins|themes
+	 * @param string $page_num          Support forum page to query.
+	 *
+	 * @return array Array of ticket data.
+	 */
+	public function get_unresolved_wordpress_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
 
 		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
 
@@ -1136,13 +1226,78 @@ class WP_Developers_Homepage_Admin {
 
 	}
 
+	/**
+	 * Get unresolved ticket for a specific page of a plugin/theme github issues list.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $plugin_theme_slug Plugin/theme slug.
+	 * @param string $ticket_type       plugins|themes
+	 * @param string $page_num          Support forum page to query.
+	 *
+	 * @return array Array of ticket data.
+	 */
+	public function get_unresolved_github_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
+
+		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
+
+		if( is_wp_error( $html ) ) {
+			$this->error_slugs[ $plugin_theme_slug ] = $plugin_theme_slug;
+			
+			return false;
+		}
+
+		$html = HtmlDomParser::str_get_html( $html );
+
+		$table = $html->find( 'div[class=issues-listing]', 0 );
+
+		// Return false if no table is found.
+		if ( empty ( $table ) ) {
+			return false;
+		}
+
+		// Generate array of row data.
+		$rows = $table->find( 'li' );
+		$rows_data = array();
+
+		foreach ( $rows as $row ) {
+
+			// Get row attributes.
+			$link       = $row->find( 'a[class=h4]', 0 );;
+			$time       = $row->find( 'relative-time', 0 );
+			$startby    = $row->find( 'span[class=opened-by]', 0 )->find( 'a', 0 );
+
+			$row_data['href']           = 'https://github.com' . $link->href;
+			$row_data['text']           = trim( $link->innertext );
+			$row_data['time']           = trim( $time->innertext );
+			$row_data['timestamp']      = strtotime( $row_data['time'] );
+			$row_data['status']         = ( $row->find( 'svg[class=open]' ) ) ? 'unresolved' : 'resolved';
+			$row_data['sticky']         = false;
+			$row_data['closed']         = false;
+			$row_data['startedby']      = trim( $startby->innertext );
+			$row_data['startedbyhref']  = $startby->href;
+			$row_data['lastposter']     = __( 'Unknown', 'wp-developer-homepage' );
+			$row_data['lastposterhref'] = $row_data['href'];
+			$row_data['type']           = 'Github';
+			$row_data['slug']           = $plugin_theme_slug;
+
+			$rows_data[] = $row_data;
+
+		}
+
+		return $rows_data;
+
+	}
+
 	public function get_page_html( $plugin_theme_slug, $page_num, $ticket_type ) {
 
 		if ( ! $page_num ) {
 			return false;
 		}
 
-		if ( 'plugins' == $ticket_type ) {
+		if ( 'github' == $ticket_type ) {
+			$remote_url = "https://github.com/{$plugin_theme_slug}/issues?q=is%3Aissue&page={$page_num}";
+		} else if ( 'plugins' == $ticket_type ) {
 			$remote_url = "https://wordpress.org/support/plugin/{$plugin_theme_slug}/active/page/{$page_num}";
 		} else {
 			$remote_url = "https://wordpress.org/support/theme/{$plugin_theme_slug}/active/page/{$page_num}";
