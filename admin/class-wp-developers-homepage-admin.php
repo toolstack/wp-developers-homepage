@@ -397,14 +397,26 @@ class WP_Developers_Homepage_Admin {
 		);
 
 		add_settings_field(
-			'github_repos', // ID
-			__( 'GitHub repos', 'wp-developers-homepage' ), // Title
+			'github_plugin_repos', // ID
+			__( 'GitHub plugin repos', 'wp-developers-homepage' ), // Title
 			array( $this, 'render_text_input' ), // Callback
 			$this->plugin_slug, // Page
 			'main-settings', // Section
 			array( // Args
-				'id' => 'github_repos',
-				'description' => __( 'Comma-separated list of GitHub repos to include, use the user/repo format for each.', 'wp-developers-homepage' ),
+				'id' => 'github_plugin_repos',
+				'description' => __( 'Comma-separated list of GitHub repos of plugins to include, use the user/repo format for each.', 'wp-developers-homepage' ),
+			)
+		);
+
+		add_settings_field(
+			'github_theme_repos', // ID
+			__( 'GitHub theme repos', 'wp-developers-homepage' ), // Title
+			array( $this, 'render_text_input' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'github_theme_repos',
+				'description' => __( 'Comma-separated list of GitHub repos of themes to include, use the user/repo format for each.', 'wp-developers-homepage' ),
 			)
 		);
 
@@ -792,7 +804,14 @@ class WP_Developers_Homepage_Admin {
 		foreach( $plugins_themes as $plugin_theme ) {
 			$result .= '<tr>' . PHP_EOL;
 			$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme->slug . '</td>' . PHP_EOL, $plugin_theme->name );
-			$result .= "<td>{$plugin_theme->type}</td>" . PHP_EOL;
+			
+			if ( 'github' == $plugin_theme->type ) {
+				$type = 'Github';
+			} else {
+				$type = 'WordPress';
+			}
+			
+			$result .= "<td>{$type}</td>" . PHP_EOL;
 			$result .= "<td>{$plugin_theme->version}</td>" . PHP_EOL;
 
 			$class = '';
@@ -840,7 +859,7 @@ class WP_Developers_Homepage_Admin {
 		$plugins_themes_from_setting = $this->get_plugins_themes_from_settings( $ticket_type );
 		
 		// Get the github repos.
-		$plugins_themes_from_github = $this->get_plugins_themes_from_github();
+		$plugins_themes_from_github = $this->get_plugins_themes_from_github( $ticket_type );
 
 		// Merge plugins/themes for 1. user and 2. manually set in settings.
 		$plugins_themes = array_merge( $plugins_themes_by_user, $plugins_themes_from_setting, $plugins_themes_from_github );
@@ -848,7 +867,7 @@ class WP_Developers_Homepage_Admin {
 		// Loop through all plugins/themes.
 		foreach ( $plugins_themes as $index => $plugins_theme ) {
 
-			$plugins_themes[ $index ]->type = ucfirst( $plugins_theme->type );
+			$plugins_themes[ $index ]->type = ( '' == $plugins_theme->type ) ? $ticket_type : $plugins_theme->type;
 
 			// Initialize ticket count to zero in case we have to return early.
 			$plugins_themes[ $index ]->unresolved_count = 0;
@@ -1002,7 +1021,7 @@ class WP_Developers_Homepage_Admin {
 
 		// Require file that includes plugin API functions.
 		if ( 'github' == $ticket_type ) {
-			$data = (object) array( 'slug' => $slug, 'name' => $slug, 'type' => 'github', 'version' => __( 'unknown', 'wp-developer-homepage' ), 'tested' => __( 'unknown', 'wp-developer-homepage' ), 'rating' => __( 'unknown', 'wp-developer-homepage' ), 'num_ratings' => __( 'unknown', 'wp-developer-homepage' ), 'downloaded' => __( 'unknown', 'wp-developer-homepage' ), 'active_installs' => __( 'unknown', 'wp-developer-homepage' ) );
+			$data = (object) array( 'slug' => $slug, 'name' => $slug, 'type' => 'github', 'version' => __( 'N/A', 'wp-developer-homepage' ), 'tested' => __( 'N/A', 'wp-developer-homepage' ), 'rating' => __( 'N/A', 'wp-developer-homepage' ), 'num_ratings' => __( 'N/A', 'wp-developer-homepage' ), 'downloaded' => __( 'N/A', 'wp-developer-homepage' ), 'active_installs' => __( 'N/A', 'wp-developer-homepage' ) );
 			
 			return $data;
 		} else if ( 'plugins' == $ticket_type ) {
@@ -1080,9 +1099,15 @@ class WP_Developers_Homepage_Admin {
 	 *
 	 * @return array Array of plugin/theme slugs.
 	 */
-	public function get_plugins_themes_from_github() {
+	public function get_plugins_themes_from_github( $ticket_type ) {
+		
+		if ( 'plugins' == $ticket_type ) { 
+			$key = 'github_plugin_repos';
+		} else { 
+			$key = 'github_theme_repos'; 
+		} 
 
-		$plugins_themes_string = ( ! empty( $this->options['github_repos'] ) ) ? $this->options['github_repos'] : '';
+		$plugins_themes_string = ( ! empty( $this->options[ $key ] ) ) ? $this->options[ $key ] : '';
 
 		// Remove whitespace from string.
 		$plugins_themes_string = str_replace( ' ', '', $plugins_themes_string );
