@@ -776,7 +776,7 @@ class WP_Developers_Homepage_Admin {
 		$result .= "\t\t\t<thead>" . PHP_EOL;
 		$result .= "\t\t\t\t<tr>" . PHP_EOL;
 		$result .= "\t\t\t\t\t<td>" . __( 'Title', 'wp-developers-homepage' ) . '</td>' . PHP_EOL;
-		$result .= "\t\t\t\t\t<td>" . __( 'Type' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Source' ) . '</td>' . PHP_EOL;
 		$result .= "\t\t\t\t\t<td>" . __( 'Version' ) . '</td>' . PHP_EOL;
 		$result .= "\t\t\t\t\t<td>" . __( 'WP Version Tested' ) . '</td>' . PHP_EOL;
 		$result .= "\t\t\t\t\t<td>" . __( 'Rating' ) . '</td>' . PHP_EOL;
@@ -803,12 +803,13 @@ class WP_Developers_Homepage_Admin {
 	
 		foreach( $plugins_themes as $plugin_theme ) {
 			$result .= '<tr>' . PHP_EOL;
-			$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme->slug . '</td>' . PHP_EOL, $plugin_theme->name );
 			
 			if ( 'github' == $plugin_theme->type ) {
 				$type = 'Github';
+				$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b></td>%s', 'https://github.com/' . $plugin_theme->slug, $plugin_theme->name, PHP_EOL );
 			} else {
 				$type = 'WordPress';
+				$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b></td>%s', 'https://wordpress.org/plugins/' . $plugin_theme->slug, $plugin_theme->name, PHP_EOL );
 			}
 			
 			$result .= "<td>{$type}</td>" . PHP_EOL;
@@ -824,11 +825,18 @@ class WP_Developers_Homepage_Admin {
 				}
 			}
 
-			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugin' == $plugin_theme->type ? $plugin_theme->tested : __( 'N/A', 'wp-developers-homepage' ) ) );
+			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( isset( $plugin_theme->tested ) ? $plugin_theme->tested : __( 'N/A', 'wp-developers-homepage' ) ) );
 			$result .= '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-developers-homepage' ) ) . '</td>' . PHP_EOL;
 			$result .= "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
-			$result .= '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
-			$result .= '<td>' . number_format_i18n( $plugin_theme->downloaded ) . '</td>' . PHP_EOL;
+			
+			if ( 'WordPress' == $type ) {
+				$result .= '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
+				$result .= '<td>' . number_format_i18n( $plugin_theme->downloaded ) . '</td>' . PHP_EOL;
+			} else {
+				$result .= '<td>' . __( 'N/A', 'wp-developers-homepage' ) . '</td>' . PHP_EOL;
+				$result .= '<td>' . __( 'N/A', 'wp-developers-homepage' ) . '</td>' . PHP_EOL;
+			}
+
 			$result .= '<td>' . number_format_i18n( $plugin_theme->unresolved_count ) . '</td>' . PHP_EOL;
 			$result .= '<td>' . number_format_i18n( $plugin_theme->resolved_count ) . '</td>' . PHP_EOL;
 			$result .= '</tr>' . PHP_EOL;
@@ -1174,13 +1182,10 @@ class WP_Developers_Homepage_Admin {
 	 */
 	public function get_unresolved_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
 
-		switch( $ticket_type ) {
-			case 'github':
-				return $this->get_unresolved_github_tickets_for_page( $plugin_theme_slug, $ticket_type, $page_num );
-				
-				break;
-			default:
-				return $this->get_unresolved_wordpress_tickets_for_page( $plugin_theme_slug, $ticket_type, $page_num );
+		if ( strstr( $plugin_theme_slug, '/' ) > 0 ) {
+			return $this->get_unresolved_github_tickets_for_page( $plugin_theme_slug, $ticket_type, $page_num );
+		} else {
+			return $this->get_unresolved_wordpress_tickets_for_page( $plugin_theme_slug, $ticket_type, $page_num );
 		}
 		
 	}
