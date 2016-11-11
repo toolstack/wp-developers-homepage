@@ -179,6 +179,7 @@ class WP_Developers_Homepage_Admin {
 		$this->plugin_name = $this->plugin->get( 'name' );
 		$this->version = $this->plugin->get( 'version' );
 		$this->options = (array)get_option( $this->plugin_slug );
+		$this->error_slugs = array();
 		$this->js_data = array(
 			'fetch_messages' => array(
 				__( 'Fetching data, thanks for your patience. . .', 'wp-developers-homepage' ),
