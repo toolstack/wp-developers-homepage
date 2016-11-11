@@ -968,7 +968,7 @@ class WP_Developers_Homepage_Admin {
 			
 			// Use the slug as the array index to make it easier later and handle the exclusions.
 			foreach ( $slug_data as $item ) {
-				if ( in_array( $item->slug, $excluded_slugs ) ) {
+				if ( in_array( $item->slug, $exclude_slugs ) ) {
 					continue;
 				}
 				
