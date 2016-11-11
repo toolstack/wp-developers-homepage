@@ -1,4 +1,4 @@
-## 1.0.0
+## 0.5
 * Release Date: TBD
 * Added: Exclusion of plugins and themes.
 * Added: Additional information on tickets, including last poster and time.
