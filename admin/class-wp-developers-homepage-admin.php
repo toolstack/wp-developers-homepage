@@ -957,6 +957,7 @@ class WP_Developers_Homepage_Admin {
 		$args = array(
 			'author' => $this->options['username'],
 			'fields' => $this->api_fields,
+			'per_page' => 1000,
 		);
 
 		$data = call_user_func( $query_function, $query_action, $args );
