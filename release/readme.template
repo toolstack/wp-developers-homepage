@@ -17,8 +17,10 @@ WP Developers Homepage provides a central place for developers of WordPress plug
 1. View and respond to all of your unresolved plugin & theme support requests.
 2. View useful statistics for all of your plugins & themes.
 
+Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-dev-dashboard/).
+
 = Features =
-* Displays plugin and theme support requests in a sortable, collapsible table for ease of use.
+* Displays plugin and theme support requests in a sortable table for ease of use.
 * Displays all plugins and themes in a sortable, easy-to-parse table.
 * Select which plugins and themes to show by username and/or slug.
 * Choose whether to show all support tickets, or just unresolved ones.
@@ -33,9 +35,9 @@ WP Developers Homepage provides a central place for developers of WordPress plug
 == Installation ==
 
 1. Install the plugin from the wordpress.org plugin directory.
-2. Go to Settings->WP Developers Dashboard in the WP admin menu.
-3. Enter your wordpress.org username in the Settings tab.
-4. Go to the WP Developers Dashboard in the WP admin menu.
+2. Go to Settings->WP Developers Homepage in the WP admin menu.
+3. Got to the settings in WordPress settings menu and configure your options.
+4. Go to the WP Developers Homepage in the WP admin menu.
 
 == Screenshots ==
 

@@ -1,6 +1,6 @@
 # WP Developers Homepage #
 
-A fork of @mickeykay's WP Dev Dashboard.
+A fork of @mickeykay's [WP Dev Dashboard](https://github.com/MickeyKay/wp-dev-dashboard).
 
 New features include:
 
