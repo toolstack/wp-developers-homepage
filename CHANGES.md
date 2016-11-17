@@ -1,5 +1,9 @@
+## 0.6
+* Release Date: Novermber 17, 2016
+* Updated: Increaesed the number of results retreived from wordpress.org for author plugins/themes.
+
 ## 0.5
-* Release Date: TBD
+* Release Date: Never
 * Added: Exclusion of plugins and themes.
 * Added: Additional information on tickets, including last poster and time.
 * Added: JavaScript sorting of table data, no more page reloads!
@@ -11,4 +15,4 @@
 * Added: Display the last data load time.
 * Updated: Simplified UI.
 * Updated: Tickets presented in a single table instead of multiple metaboxes.
-* Forked: From @mickeykay's WP Dev Dashboard V1.4.0.
+* Forked: From @mickeykay's WP Dev Dashboard V1.4.0 (https://github.com/MickeyKay/wp-dev-dashboard or https://wordpress.org/plugins/wp-dev-dashboard/).
