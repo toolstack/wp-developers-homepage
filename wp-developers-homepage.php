@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              http://wordpress.org/plugins/wp-developers-homepage
- * @since             1.0.0
+ * @since             0.5.0
  * @package           WP_Developers_Homepage
  *
  * @wordpress-plugin
  * Plugin Name:       WP Developers Homepage
  * Plugin URI:        http://wordpress.org/plugins/wp-developers-homepage
  * Description:       Easily see all of your unresolved plugin & theme support requests.
- * Version:           1.0.0
+ * Version:           0.6.0
  * Author:            Greg Ross
  * Author URI:        http://toolstackc.com/
  * License:           GPL-2.0+
@@ -73,7 +73,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-wp-developers-homepage.php
  * then kicking off the plugin from this point in the file does
  * not affect the page life cycle.
  *
- * @since    1.0.0
+ * @since    0.5.0
  */
 function run_wp_developers_homepage() {
 

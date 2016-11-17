@@ -5,7 +5,7 @@ use Sunra\PhpSimple\HtmlDomParser;
  * The dashboard-specific functionality of the plugin.
  *
  * @link       http://wordpress.org/plugins/wp-developers-homepage
- * @since      1.0.0
+ * @since      0.5.0
  *
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/admin
@@ -26,7 +26,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * The main plugin instance.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      WP_Developers_Homepage    $plugin    The main plugin instance.
 	 */
@@ -35,7 +35,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * The slug of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $plugin_slug    The slug of this plugin.
 	 */
@@ -44,7 +44,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * The display name of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      string    $plugin_name    The plugin display name.
 	 */
@@ -53,7 +53,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * The version of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $version    The current version of this plugin.
 	 */
@@ -62,7 +62,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * The plugin settings.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $options    The plugin settings.
 	 */
@@ -71,7 +71,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Data to pass to JS.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $js_data    Data to pass to JS.
 	 */
@@ -80,7 +80,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * The ID of the settings page screen.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $screen_id    The ID of the settings page screen.
 	 */
@@ -89,7 +89,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Fields to fetch via the plugin/theme APIs.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $api_fields    Fields to fetch via the plugin/theme APIs
 	 */
@@ -144,7 +144,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * The instance of this class.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      WP_Developers_Homepage_Admin    $instance    The instance of this class.
 	 */
@@ -168,7 +168,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @var      string    $plugin_slug       The name of this plugin.
 	 * @var      string    $version    The version of this plugin.
 	 */
@@ -200,7 +200,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Get any plugin property.
 	 *
-	 * @since     1.0.0
+	 * @since     0.5.0
 	 * @return    mixed    The plugin property.
 	 */
 	public function get( $property = '' ) {
@@ -210,7 +210,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Register the scripts for the admin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 */
 	public function enqueue_styles() {
 
@@ -222,7 +222,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Register the scripts for the admin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 */
 	public function enqueue_scripts() {
 
@@ -236,7 +236,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Add settings page.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 */
 	function add_settings_page() {
 
@@ -261,7 +261,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Output contents of the settings page.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 */
 	function do_settings_page() {
 
@@ -320,7 +320,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Add settings fields to the settings page.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 */
 	function add_settings_fields() {
 
@@ -464,7 +464,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Text input settings field callback.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param array $args Args from add_settings_field().
 	 */
@@ -489,7 +489,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Checkbox settings field callback.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param array $args Args from add_settings_field().
 	 */
@@ -511,7 +511,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Output refresh button.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 */
 	public function do_refresh_button() {
 
@@ -534,7 +534,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Generate the table for tickets and return it.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param bool   $force_refresh Whether or not to force an uncached refresh.
 	 */
@@ -618,7 +618,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Helper function to update ticket/stats content via Ajax.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 */
 	public function get_ajax_content() {
 
@@ -660,7 +660,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Get all plugin or theme data based on the plugin settings.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param string $ticket_type   Plugins or themes.
 	 * @param bool   $force_refresh Whether or not to force cache-busting refresh.
@@ -719,7 +719,7 @@ class WP_Developers_Homepage_Admin {
 				/**
 				 * Filter transient expiration time.
 				 *
-				 * @since 1.0.0
+				 * @since 0.5.0
 				 *
 				 * @param $expiration Expiration in seconds (default 3600 - one hour).
 				 */
@@ -740,7 +740,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Output a list table of plugins/themes stats.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 */
 	public function generate_stats_table( $force_refresh = false ) {
 		$result = '';
@@ -809,7 +809,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Get tickets data for a specific user's plugin or themes.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param string $username    WordPress.org username.
 	 * @param string $ticket_type Type of ticket to query for.
@@ -864,7 +864,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Generate HTML for output for a plugin's/theme's tickets.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param array $tickets_data Array of tickets data.
 	 *
@@ -916,7 +916,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Get data for a specific plugin/theme.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param string $username    WordPress.org username.
 	 * @param string $ticket_type Type of ticket to check for.
@@ -1008,7 +1008,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Get array of plugin/theme slugs manually specified in the plugin settings.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param string $ticket_type Type of ticket to fetch.
 	 *
@@ -1051,7 +1051,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Get unresolved ticket data for a specific plugin/theme.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param string $plugin_theme_slug Plugin/theme slug.
 	 * @param string $ticket_type       plugins|themes
@@ -1075,7 +1075,7 @@ class WP_Developers_Homepage_Admin {
 	/**
 	 * Get unresolved ticket for a specific page of a plugin/theme support forum.
 	 *
-	 * @since 1.0.0
+	 * @since 0.5.0
 	 *
 	 * @param string $plugin_theme_slug Plugin/theme slug.
 	 * @param string $ticket_type       plugins|themes

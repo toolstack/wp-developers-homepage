@@ -7,7 +7,7 @@
  * public-facing side of the site and the dashboard.
  *
  * @link       http://wordpress.org/plugins/wp-developers-homepage
- * @since      1.0.0
+ * @since      0.5.0
  *
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/includes
@@ -18,7 +18,7 @@
  *
  * This is used to define functions that are required for the plugin.
  *
- * @since      1.0.0
+ * @since      0.5.0
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/includes
  * @author     Greg Ross

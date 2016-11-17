@@ -7,7 +7,7 @@
  * public-facing side of the site and the dashboard.
  *
  * @link       http://wordpress.org/plugins/wp-developers-homepage
- * @since      1.0.0
+ * @since      0.5.0
  *
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/includes
@@ -22,7 +22,7 @@
  * Also maintains the unique identifier of this plugin as well as the current
  * version of the plugin.
  *
- * @since      1.0.0
+ * @since      0.5.0
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/includes
  * @author     Greg Ross
@@ -32,7 +32,7 @@ class WP_Developers_Homepage {
 	/**
 	 * The main plugin file.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      string    $plugin_file    The main plugin file.
 	 */
@@ -42,7 +42,7 @@ class WP_Developers_Homepage {
 	 * The loader that's responsible for maintaining and registering all hooks that power
 	 * the plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      WP_Developers_Homepage_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
@@ -51,7 +51,7 @@ class WP_Developers_Homepage {
 	/**
 	 * The unique identifier of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      string    $slug    The string used to uniquely identify this plugin.
 	 */
@@ -60,7 +60,7 @@ class WP_Developers_Homepage {
 	/**
 	 * The display name of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      string    $name    The plugin display name.
 	 */
@@ -69,7 +69,7 @@ class WP_Developers_Homepage {
 	/**
 	 * The current version of the plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      string    $version    The current version of the plugin.
 	 */
@@ -78,7 +78,7 @@ class WP_Developers_Homepage {
 	/**
 	 * The instance of this class.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      WP_Developers_Homepage    $instance    The instance of this class.
 	 */
@@ -106,7 +106,7 @@ class WP_Developers_Homepage {
 	 * Load the dependencies, define the locale, and set the hooks for the Dashboard and
 	 * the public-facing side of the site.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 */
 	public function __construct( $args ) {
 
@@ -114,7 +114,7 @@ class WP_Developers_Homepage {
 
 		$this->slug = 'wp-developers-homepage';
 		$this->name = __( 'WP Developers Homepage', 'wp-developers-homepage' );
-		$this->version = '1.0.0';
+		$this->version = '0.5.0';
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -137,7 +137,7 @@ class WP_Developers_Homepage {
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 */
 	private function load_dependencies() {
@@ -187,7 +187,7 @@ class WP_Developers_Homepage {
 	 * Uses the WP_Developers_Homepage_i18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 */
 	private function set_locale() {
@@ -203,7 +203,7 @@ class WP_Developers_Homepage {
 	 * Register all of the hooks related to the dashboard functionality
 	 * of the plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 */
 	private function define_admin_hooks() {
@@ -225,7 +225,7 @@ class WP_Developers_Homepage {
 	 * Register all of the hooks related to the public-facing functionality
 	 * of the plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 */
 	private function define_public_hooks() {
@@ -241,7 +241,7 @@ class WP_Developers_Homepage {
 	 * Register all of the hooks related to both the admin and public-facing
 	 * functionality of the plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 */
 	private function define_shared_hooks() {
@@ -255,7 +255,7 @@ class WP_Developers_Homepage {
 	/**
 	 * Run the loader to execute all of the hooks with WordPress.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 */
 	public function run() {
 		$this->loader->run();
@@ -264,7 +264,7 @@ class WP_Developers_Homepage {
 	/**
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
-	 * @since     1.0.0
+	 * @since     0.5.0
 	 * @return    WP_Developers_Homepage_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
@@ -274,7 +274,7 @@ class WP_Developers_Homepage {
 	/**
 	 * Get any plugin property.
 	 *
-	 * @since     1.0.0
+	 * @since     0.5.0
 	 * @return    mixed    The plugin property.
 	 */
 	public function get( $property = '' ) {

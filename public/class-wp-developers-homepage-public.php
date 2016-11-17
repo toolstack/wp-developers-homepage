@@ -4,7 +4,7 @@
  * The public-facing functionality of the plugin.
  *
  * @link       http://wordpress.org/plugins/wp-developers-homepage
- * @since      1.0.0
+ * @since      0.5.0
  *
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/public
@@ -25,7 +25,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * The main plugin instance.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      WP_Developers_Homepage    $plugin    The main plugin instance.
 	 */
@@ -34,7 +34,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * The slug of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $plugin_slug    The slug of this plugin.
 	 */
@@ -43,7 +43,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * The display name of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      string    $plugin_name    The plugin display name.
 	 */
@@ -52,7 +52,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * The version of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   private
 	 * @var      string    $version    The current version of this plugin.
 	 */
@@ -61,7 +61,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * The instance of this class.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @access   protected
 	 * @var      WP_Developers_Homepage_Public    $instance    The instance of this class.
 	 */
@@ -85,7 +85,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 * @var      string    $plugin_slug    The name of the plugin.
 	 * @var      string    $version        The version of this plugin.
 	 */
@@ -101,7 +101,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * Register the stylesheets for the public-facing side of the site.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 */
 	public function enqueue_styles() {
 
@@ -124,7 +124,7 @@ class WP_Developers_Homepage_Public {
 	/**
 	 * Register the scripts for the public-facing side of the site.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 */
 	public function enqueue_scripts() {
 

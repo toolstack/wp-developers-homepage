@@ -4,7 +4,7 @@
  * Fired during plugin activation
  *
  * @link       http://wordpress.org/plugins/wp-developers-homepage
- * @since      1.0.0
+ * @since      0.5.0
  *
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/includes
@@ -15,7 +15,7 @@
  *
  * This class defines all code necessary to run during the plugin's activation.
  *
- * @since      1.0.0
+ * @since      0.5.0
  * @package    WP_Developers_Homepage
  * @subpackage WP_Developers_Homepage/includes
  * @author     Greg Ross
@@ -27,7 +27,7 @@ class WP_Developers_Homepage_Activator {
 	 *
 	 * Long Description.
 	 *
-	 * @since    1.0.0
+	 * @since    0.5.0
 	 */
 	public static function activate() {
 
