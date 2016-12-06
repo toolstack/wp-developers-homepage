@@ -41,6 +41,7 @@
 
 .wdh-sub-tab-nav {
 	font-size: 0;
+	border-bottom: none;
 }
 
 .wdh-sub-tab-nav .button {
