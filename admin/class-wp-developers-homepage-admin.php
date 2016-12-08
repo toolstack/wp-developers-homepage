@@ -783,14 +783,14 @@ class WP_Developers_Homepage_Admin {
 			$class = '';
 
 			if ( $wp_version ) {
-				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'plugin' == $plugin_theme->type ) {
+				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'Plugin' == $plugin_theme->type ) {
 					$class = 'wdh-current';
 				} else {
 					$class = 'wdh-needs-update';
 				}
 			}
 
-			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'plugin' == $plugin_theme->type ? $plugin_theme->tested : __( 'N/A', 'wp-developers-homepage' ) ) );
+			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'Plugin' == $plugin_theme->type ? $plugin_theme->tested : __( 'N/A', 'wp-developers-homepage' ) ) );
 			$result .= '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-developers-homepage' ) ) . '</td>' . PHP_EOL;
 			$result .= "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
 			$result .= '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
