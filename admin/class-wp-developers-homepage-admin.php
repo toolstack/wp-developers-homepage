@@ -1109,18 +1109,19 @@ class WP_Developers_Homepage_Admin {
 		foreach ( $rows as $row ) {
 
 			// Get row attributes.
-			$title      = $row->find( 'li[class=bbp-topic-title]', 0 );
-			$freshness  = $row->find( 'li[class=bbp-topic-freshness]', 0 );
-			$link       = $title->find( 'a', 0 );
-			$time       = $freshness->find( 'a', 0 );
-			$startby    = $title->find( 'a[class=bbp-author-name]', 0 );
-			$lastposter = $freshness->find( 'a[class=bbp-author-name]', 0 );
+			$title         = $row->find( 'li[class=bbp-topic-title]', 0 );
+			$freshness     = $row->find( 'li[class=bbp-topic-freshness]', 0 );
+			$link          = $title->find( 'a', 0 );
+			$time          = $freshness->find( 'a', 0 );
+			$startby       = $title->find( 'a[class=bbp-author-name]', 0 );
+			$lastposter    = $freshness->find( 'a[class=bbp-author-name]', 0 );
+			$resolved_span = $row->find( 'span[class=resolved]', 0 );
 
 			$row_data['href']           = $link->href;
 			$row_data['text']           = $link->innertext;
 			$row_data['time']           = $time->innertext;
 			$row_data['timestamp']      = strtotime( $row_data['time'] );
-			$row_data['status']         = ( strpos( $link->innertext, '[Resolved]') === 0 ) ? 'resolved' : 'unresolved';
+			$row_data['status']         = ( $resolved_span !== null ) ? 'resolved' : 'unresolved';
 			$row_data['sticky']         = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
 			$row_data['closed']         = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
 			$row_data['startedby']      = $startby->innertext;
