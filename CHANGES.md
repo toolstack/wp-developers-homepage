@@ -3,8 +3,8 @@
 * Fixed: Update parser to handle new forum structure for resolved tickets.
 
 ## 0.6
-* Release Date: Novermber 17, 2016
-* Updated: Increaesed the number of results retreived from wordpress.org for author plugins/themes.
+* Release Date: November 17, 2016
+* Updated: Increased the number of results retrieved from wordpress.org for author plugins/themes.
 
 ## 0.5
 * Release Date: Never
