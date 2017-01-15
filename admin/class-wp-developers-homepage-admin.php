@@ -595,7 +595,7 @@ class WP_Developers_Homepage_Admin {
 			if ( 'resolved' == $ticket_data['status'] ) {
 				$icon_class = 'yes';
 			} else {
-				$icon_class = 'editor-help';
+				$icon_class = 'admin-comments';
 			}
 
 			$icon_html = sprintf( '<span class="dashicons dashicons-%s" title="%s"></span> ', $icon_class, ucfirst( $ticket_data['status'] ) );
