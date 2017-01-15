@@ -1,3 +1,7 @@
+## 0.7
+* Release Date: January 15, 2017
+* Fixed: Update parser to handle new forum structure for resolved tickets.
+
 ## 0.6
 * Release Date: Novermber 17, 2016
 * Updated: Increaesed the number of results retreived from wordpress.org for author plugins/themes.
