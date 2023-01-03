@@ -4,7 +4,7 @@
 **Tags:** developers, plugin, theme, unresolved, support, requests, tickets  
 **Requires at least:** 5.0  
 **Tested up to:** 6.1.1  
-**Stable tag:** 0.7  
+**Stable tag:** 0.8  
 **License:** GPLv2  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -54,7 +54,7 @@ Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-
 ## Changelog ##
 
 ### 0.8 ###
-* Release Date: TBD
+* Release Date: Jan 2, 2023
 * Fixed: Compatibility with PHP 7+.
 * Fixed: Parsing of wordpress.org pages.
 * Fixed: ...basically just made it work again ;)
