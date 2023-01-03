@@ -1,5 +1,5 @@
 <?php
-use Sunra\PhpSimple\HtmlDomParser;
+use simplehtmldom\HtmlWeb;
 
 /**
  * The dashboard-specific functionality of the plugin.
@@ -194,7 +194,7 @@ class WP_Developers_Homepage_Admin {
 		} else if( get_option( 'gmt_offset' ) ) {
 			$this->tz_offset = get_option( 'gmt_offset' ) * 60 * 60;
 		}
-		
+
 	}
 
 	/**
@@ -540,7 +540,7 @@ class WP_Developers_Homepage_Admin {
 	 */
 	public function generate_tickets_table( $force_refresh = false ) {
 		$result = '';
-		
+
 		$result .= "\t\t<table class=\"widefat striped wdh-tickets-table\" id=\"wdh_tickets_table\">" . PHP_EOL;
 		$result .= "\t\t\t<thead>" . PHP_EOL;
 		$result .= "\t\t\t\t<tr>" . PHP_EOL;
@@ -557,19 +557,19 @@ class WP_Developers_Homepage_Admin {
 		$plugins_themes = array_merge( $this->get_plugins_themes( 'plugins', $force_refresh ), $this->get_plugins_themes( 'themes', $force_refresh ) );
 		$tickets_data = array();
 		$plugin_theme_names = array();
-		
+
 		$age_limit = ( empty( $this->options['age_limit'] ) ) ? 0 : (int)$this->options['age_limit'];
 		$ctime = time();
 		$age_limit_time = strtotime( "{$age_limit} days ago", $ctime );
-		
+
 		foreach( $plugins_themes as $plugin_theme ) {
 			// Skip if there are no tickets.
-			if ( empty ( $plugin_theme->tickets_data ) ) {
+			if ( empty ( $plugin_theme['tickets_data'] ) ) {
 				continue;
 			}
 
-			$plugin_theme_names[$plugin_theme->slug] = $plugin_theme->name;
-			$tickets_data = array_merge( $tickets_data, $plugin_theme->tickets_data );
+			$plugin_theme_names[$plugin_theme['slug']] = $plugin_theme['name'];
+			$tickets_data = array_merge( $tickets_data, $plugin_theme['tickets_data'] );
 
 		}
 
@@ -590,7 +590,7 @@ class WP_Developers_Homepage_Admin {
 					continue;
 				}
 			}
-			
+
 			// Generate status icons.
 			if ( 'resolved' == $ticket_data['status'] ) {
 				$icon_class = 'yes';
@@ -604,14 +604,14 @@ class WP_Developers_Homepage_Admin {
 			$result .= '<td>' . $icon_html . '</td>' . PHP_EOL;
 			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
 			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
-			$result .= '<td>' . $plugin_theme->type . '</td>' . PHP_EOL;
+			$result .= '<td>' . $plugin_theme['type'] . '</td>' . PHP_EOL;
 			$result .= '<td>' . date( 'M d, Y g:m a', $ticket_data['timestamp'] + $this->tz_offset ) . '</td>' . PHP_EOL;
 			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['lastposterhref'], $ticket_data['lastposter'], PHP_EOL );
 		}
 
 		$result .= "\t\t\t</tbody>" . PHP_EOL;
 		$result .= "\t\t</table>" . PHP_EOL;
-		
+
 		return $result;
 	}
 
@@ -628,11 +628,11 @@ class WP_Developers_Homepage_Admin {
 
 		$tickets_table = $this->generate_tickets_table( $force_refresh );
 		$stats_table = $this->generate_stats_table( $force_refresh );
-		
+
 		if ( count( $this->error_slugs ) > 0 ) {
 			printf( '<div class="error"><p>%s %s</p></div>', __( 'WP Developers Homepage Error: The following items could not be retrieved from wordpress.org;', 'wp-developers-homepage' ), implode( ', ', $this->error_slugs ) );
 		}
-		
+
 		// Output refresh button.
 		$this->do_refresh_button();
 
@@ -674,7 +674,7 @@ class WP_Developers_Homepage_Admin {
 		$username = ! empty( $this->options['username'] ) ? $this->options['username'] : '';
 
 		$data = get_option( $this->data_slug, false );
-		
+
 		if ( false === $data ) {
 			$data = array();
 			$data['plugins'] = array();
@@ -684,7 +684,7 @@ class WP_Developers_Homepage_Admin {
 		} else {
 			$this->last_data_update = $data['plugins_timestamp'] > $data['themes_timestamp'] ? $data['plugins_timestamp'] : $data['themes_timestamp'];
 		}
-		
+
 		$plugins_themes = $data[ $ticket_type ];
 
 		if( true === $quick ) {
@@ -693,7 +693,7 @@ class WP_Developers_Homepage_Admin {
 
 		// Make sure the cron job is set.
 		$this->set_wp_cron();
-		
+
 		// Get the number of hours we should keep the transient for.
 		$timeout = (int)$this->options['refresh_timeout'];
 
@@ -703,7 +703,7 @@ class WP_Developers_Homepage_Admin {
 		// Calculate the expiry time of the current data.
 		$expiry_time = $data[ $ticket_type . '_timestamp' ];
 		$expiry_time = $expiry_time + ( $timeout * 60 * 60 );
-		
+
 		if ( $force_refresh || time() > $expiry_time ) {
 
 			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
@@ -713,7 +713,7 @@ class WP_Developers_Homepage_Admin {
 					$plugins_themes[ $slug ] = $data[ $ticket_type ][ $slug ];
 				}
 			}
-			
+
 			if ( $plugins_themes ) {
 
 				/**
@@ -724,7 +724,7 @@ class WP_Developers_Homepage_Admin {
 				 * @param $expiration Expiration in seconds (default 3600 - one hour).
 				 */
 				$transient_expiration = apply_filters( 'wdh_transient_expiration', $timeout * HOUR_IN_SECONDS );
-				
+
 				$data[ $ticket_type ] = $plugins_themes;
 				$data[ $ticket_type . '_timestamp'] = time();
 				update_option( $this->data_slug, $data );
@@ -744,7 +744,7 @@ class WP_Developers_Homepage_Admin {
 	 */
 	public function generate_stats_table( $force_refresh = false ) {
 		$result = '';
-		
+
 		$result .= "\t\t<table class=\"widefat striped wdh-stats-table\" id=\"wdh_stats_table\">" . PHP_EOL;
 		$result .= "\t\t\t<thead>" . PHP_EOL;
 		$result .= "\t\t\t\t<tr>" . PHP_EOL;
@@ -773,12 +773,12 @@ class WP_Developers_Homepage_Admin {
 				$wp_version = $wp_branches[ $index ]->version;
 			}
 		}
-	
+
 		foreach( $plugins_themes as $plugin_theme ) {
 			$result .= '<tr>' . PHP_EOL;
-			$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme->slug . '</td>' . PHP_EOL, $plugin_theme->name );
-			$result .= "<td>{$plugin_theme->type}</td>" . PHP_EOL;
-			$result .= "<td>{$plugin_theme->version}</td>" . PHP_EOL;
+			$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme['slug'] . PHP_EOL, $plugin_theme['name'] );
+			$result .= "<td>$plugin_theme[type]</td>" . PHP_EOL;
+			$result .= "<td>$plugin_theme[version]</td>" . PHP_EOL;
 
 			$class = '';
 
@@ -790,19 +790,19 @@ class WP_Developers_Homepage_Admin {
 				}
 			}
 
-			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'Plugin' == $plugin_theme->type ? $plugin_theme->tested : __( 'N/A', 'wp-developers-homepage' ) ) );
-			$result .= '<td>' . ( $plugin_theme->rating ? $plugin_theme->rating : __( 'N/A', 'wp-developers-homepage' ) ) . '</td>' . PHP_EOL;
-			$result .= "<td>{$plugin_theme->num_ratings}</td>" . PHP_EOL;
-			$result .= '<td>' . number_format_i18n( $plugin_theme->active_installs ) . '</td>' . PHP_EOL;
-			$result .= '<td>' . number_format_i18n( $plugin_theme->downloaded ) . '</td>' . PHP_EOL;
-			$result .= '<td>' . number_format_i18n( $plugin_theme->unresolved_count ) . '</td>' . PHP_EOL;
-			$result .= '<td>' . number_format_i18n( $plugin_theme->resolved_count ) . '</td>' . PHP_EOL;
+			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'Plugin' == $plugin_theme['type'] ? $plugin_theme['tested'] : __( 'N/A', 'wp-developers-homepage' ) ) );
+			$result .= '<td>' . ( $plugin_theme['rating'] ? $plugin_theme['rating'] : __( 'N/A', 'wp-developers-homepage' ) ) . '</td>' . PHP_EOL;
+			$result .= "<td>{$plugin_theme['num_ratings']}</td>" . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme['active_installs'] ) . '</td>' . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme['downloaded'] ) . '</td>' . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme['unresolved_count'] ) . '</td>' . PHP_EOL;
+			$result .= '<td>' . number_format_i18n( $plugin_theme['resolved_count'] ) . '</td>' . PHP_EOL;
 			$result .= '</tr>' . PHP_EOL;
 		}
 
 		$result .= "\t\t\t</tbody>" . PHP_EOL;
 		$result .= "\t\t</table>" . PHP_EOL;
-		
+
 		return $result;
 	}
 
@@ -830,27 +830,27 @@ class WP_Developers_Homepage_Admin {
 		// Loop through all plugins/themes.
 		foreach ( $plugins_themes as $index => $plugins_theme ) {
 
-			$plugins_themes[ $index ]->type = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+			$plugins_themes[ $index ]['type'] = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
 
 			// Initialize ticket count to zero in case we have to return early.
-			$plugins_themes[ $index ]->unresolved_count = 0;
-			$plugins_themes[ $index ]->resolved_count = 0;
+			$plugins_themes[ $index ]['unresolved_count'] = 0;
+			$plugins_themes[ $index ]['resolved_count'] = 0;
 
-			$tickets_data = $this->get_unresolved_tickets( $plugins_theme->slug, $ticket_type );
+			$tickets_data = $this->get_unresolved_tickets( $plugins_theme['slug'], $ticket_type );
 
 			if ( ! $tickets_data ) {
 				continue;
 			}
 
-			$plugins_themes[ $index ]->tickets_data = $tickets_data;
+			$plugins_themes[ $index ]['tickets_data'] = $tickets_data;
 
 			// Add ticket counts.
 			foreach ( $tickets_data as $ticket_data ) {
 
 				if ( 'unresolved' == $ticket_data['status'] ) {
-					$plugins_themes[ $index ]->unresolved_count++;
+					$plugins_themes[ $index ]['unresolved_count']++;
 				} else {
-					$plugins_themes[ $index ]->resolved_count++;
+					$plugins_themes[ $index ]['resolved_count']++;
 				}
 
 			}
@@ -954,6 +954,9 @@ class WP_Developers_Homepage_Admin {
 		// Trim all the elements in the exclusion list.
 		$exclude_slugs = array_map( 'trim', $exclude_slugs );
 
+		// Lowercase all the elements in the exclusion list.
+		$exclude_slugs = array_map( 'strtolower', $exclude_slugs );
+
 		$args = array(
 			'author' => $this->options['username'],
 			'fields' => $this->api_fields,
@@ -966,14 +969,14 @@ class WP_Developers_Homepage_Admin {
 
 		if ( $data && ! is_wp_error( $data ) ) {
 			$slug_data = ( 'plugins' == $ticket_type ) ? $data->plugins : $data->themes;
-			
+
 			// Use the slug as the array index to make it easier later and handle the exclusions.
 			foreach ( $slug_data as $item ) {
-				if ( in_array( $item->slug, $exclude_slugs ) ) {
+				if ( in_array( $item['slug'], $exclude_slugs ) ) {
 					continue;
 				}
-				
-				$plugins_themes_by_user[ $item->slug ] = $item;
+
+				$plugins_themes_by_user[ $item['slug'] ] = $item;
 			}
 		}
 
@@ -1085,49 +1088,52 @@ class WP_Developers_Homepage_Admin {
 	 */
 	public function get_unresolved_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
 
-		$html = $this->get_page_html( $plugin_theme_slug, $page_num, $ticket_type );
+		$html = $this->get_page_link( $plugin_theme_slug, $page_num, $ticket_type );
 
 		if( is_wp_error( $html ) ) {
 			$this->error_slugs[ $plugin_theme_slug ] = $plugin_theme_slug;
-			
+
 			return false;
 		}
 
-		$html = HtmlDomParser::str_get_html( $html );
 
-		$table = $html->find( 'li[class=bbp-body]', 0 );
+		$client = new HtmlWeb();
+		$dom = $client->load($html);
 
-		// Return false if no table is found.
-		if ( empty ( $table ) ) {
+		$table = $dom->find( 'li.bbp-body', 0 );
+
+		if( is_null($table)) {
 			return false;
 		}
 
-		// Generate array of row data.
-		$rows = $table->find( 'ul[class=topic]' );
+		// Returns the page title
+		$rows = $table->find('ul.topic', 0);
 		$rows_data = array();
 
-		foreach ( $rows as $row ) {
+		foreach ( $table->find('ul.topic') as $row ) {
+
+			if( is_null( $row ) ) { continue; }
 
 			// Get row attributes.
-			$title         = $row->find( 'li[class=bbp-topic-title]', 0 );
-			$freshness     = $row->find( 'li[class=bbp-topic-freshness]', 0 );
+			$title         = $row->find( 'li.bbp-topic-title', 0 );
+			$freshness     = $row->find( 'li.bbp-topic-freshness', 0 );
 			$link          = $title->find( 'a', 0 );
 			$time          = $freshness->find( 'a', 0 );
-			$startby       = $title->find( 'a[class=bbp-author-name]', 0 );
-			$lastposter    = $freshness->find( 'a[class=bbp-author-name]', 0 );
-			$resolved_span = $row->find( 'span[class=resolved]', 0 );
+			$startby       = $title->find( 'a.bbp-author-name', 0 );
+			$lastposter    = $freshness->find( 'a.bbp-author-link', 0 );
+			$resolved_span = $row->find( 'span.resolved', 0 );
 
-			$row_data['href']           = $link->href;
-			$row_data['text']           = $link->innertext;
-			$row_data['time']           = $time->innertext;
+			$row_data['href']           = ( ! is_null( $link ) ? $link->href : '' );
+			$row_data['text']           = ( ! is_null( $link ) ? $link->innertext : '' );
+			$row_data['time']           = ( ! is_null( $time ) ? $time->innertext : '' );
 			$row_data['timestamp']      = strtotime( $row_data['time'] );
 			$row_data['status']         = ( $resolved_span !== null ) ? 'resolved' : 'unresolved';
 			$row_data['sticky']         = ( strpos( $row->class, 'sticky') !== false ) ? true : false;
 			$row_data['closed']         = ( strpos( $row->class, 'status-closed') !== false ) ? true : false;
-			$row_data['startedby']      = $startby->innertext;
-			$row_data['startedbyhref']  = $startby->href;
-			$row_data['lastposter']     = $lastposter->innertext;
-			$row_data['lastposterhref'] = $lastposter->href;
+			$row_data['startedby']      = ( ! is_null( $startby ) ? $startby->innertext : '' );
+			$row_data['startedbyhref']  = ( ! is_null( $startby ) ? $startby->href : '' );
+			$row_data['lastposter']     = ( ! is_null( $lastposter ) ? $lastposter->innertext : '' );
+			$row_data['lastposterhref'] = ( ! is_null( $lastposter ) ? $lastposter->href : '' );
 			$row_data['type']           = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
 			$row_data['slug']           = $plugin_theme_slug;
 
@@ -1136,6 +1142,22 @@ class WP_Developers_Homepage_Admin {
 		}
 
 		return $rows_data;
+
+	}
+
+	public function get_page_link( $plugin_theme_slug, $page_num, $ticket_type ) {
+
+		if ( ! $page_num ) {
+			return false;
+		}
+
+		if ( 'plugins' == $ticket_type ) {
+			$remote_url = "https://wordpress.org/support/plugin/{$plugin_theme_slug}/active/page/{$page_num}";
+		} else {
+			$remote_url = "https://wordpress.org/support/theme/{$plugin_theme_slug}/active/page/{$page_num}";
+		}
+
+		return $remote_url;
 
 	}
 
@@ -1169,7 +1191,7 @@ class WP_Developers_Homepage_Admin {
 	public function set_wp_cron() {
 		$timestamp = wp_next_scheduled( 'wdh_run_wp_cron' );
 		$update = array_key_exists( 'schedule_updates', $this->options ) ? $this->options['schedule_updates'] : false;
-		
+
 		if ( ! $timestamp && $update ) {
 			$starthour = date( 'H' ) + 1;
 			$starttime = strtotime( "{$starthour}:00 today" );
@@ -1177,11 +1199,11 @@ class WP_Developers_Homepage_Admin {
 			wp_schedule_event( $starttime, 'hourly', 'wdh_run_wp_cron' );
 		}
 	}
-	
+
 	public function clear_wp_cron() {
 		wp_clear_scheduled_hook( 'wdh_run_wp_cron' );
 	}
-	
+
 	public function run_wp_cron() {
 		$data = get_option( $this->data_slug, false );
 
@@ -1193,16 +1215,16 @@ class WP_Developers_Homepage_Admin {
 
 		// Calculate the expiry time of the current data.
 		$expiry_time = $timeout * 60 * 60;
-		
+
 		// The expiry time is the timestamp + # hours - 30 minutes (1800)
 		// The minus thrity minutes ensures that the longest wait period is 30 minutes for an update to happen.
 		$plugins_expiry_time = $data['plugins_timestamp'] + $expiry_time - 1800;
 		$themes_expiry_time = $data['themes_timestamp'] + $expiry_time - 1800;
-				
+
 		if ( time() > $plugins_expiry_time ) {
 			get_plugins_themes( 'plugins', true, false );
 		}
-		
+
 		if ( time() > $themes_expiry_time ) {
 			get_plugins_themes( 'themes', true, false );
 		}

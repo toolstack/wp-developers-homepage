@@ -1,5 +1,6 @@
 {
+    "minimum-stability": "beta",
     "require": {
-        "sunra/php-simple-html-dom-parser": "*"
+        "simplehtmldom/simplehtmldom": "*"
     }
 }
