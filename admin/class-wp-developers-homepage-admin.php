@@ -790,6 +790,14 @@ class WP_Developers_Homepage_Admin {
 				}
 			}
 
+			$rating = intval( $plugin_theme['rating'] );
+			$rating_sum += $rating;
+			if( $rating > 0 ) { $rating_count++; }
+			$installs += $plugin_theme['active_installs'];
+			$downloads += $plugin_theme['downloaded'];
+			$unresolved += $plugin_theme['unresolved_count'];
+			$resolved += $plugin_theme['resolved_count'];
+
 			$result .= sprintf( '<td><span class="%s">%s</span></td>' . PHP_EOL, $class, ( 'Plugin' == $plugin_theme['type'] ? $plugin_theme['tested'] : __( 'N/A', 'wp-developers-homepage' ) ) );
 			$result .= '<td>' . ( $plugin_theme['rating'] ? $plugin_theme['rating'] : __( 'N/A', 'wp-developers-homepage' ) ) . '</td>' . PHP_EOL;
 			$result .= "<td>{$plugin_theme['num_ratings']}</td>" . PHP_EOL;
@@ -801,6 +809,26 @@ class WP_Developers_Homepage_Admin {
 		}
 
 		$result .= "\t\t\t</tbody>" . PHP_EOL;
+
+		// Make sure we don't divide by zero...
+		if( $rating_count < 1 ) { $rating_count = 1; }
+
+		$result .= "\t\t\t<tfoot>" . PHP_EOL;
+		$result .= "\t\t\t\t<tr>" . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . __( 'Totals/Averages', 'wp-developers-homepage' ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td></td>" . PHP_EOL;
+		$result .= "\t\t\t\t\t<td></td>" . PHP_EOL;
+		$result .= "\t\t\t\t\t<td></td>" . PHP_EOL;
+		$result .= "\t\t\t\t\t<td></td>" . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . round( $rating_sum / $rating_count ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . number_format_i18n( $installs ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . number_format_i18n( $downloads ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . number_format_i18n( $unresolved ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t\t<td>" . number_format_i18n( $resolved ) . '</td>' . PHP_EOL;
+		$result .= "\t\t\t\t</tr>" . PHP_EOL;
+		$result .= "\t\t\t</tfoot>" . PHP_EOL;
+		$result .= "\t\t<tbody>" . PHP_EOL;
+
 		$result .= "\t\t</table>" . PHP_EOL;
 
 		return $result;
