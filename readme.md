@@ -55,9 +55,10 @@ Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-
 
 ### 0.8 ###
 * Release Date: TBD
-* Fixed compatibility with PHP 7+.
-* Fixed parsing of wordpress.org pages.
-* ... basically just made it work again ;)
+* Fixed: Compatibility with PHP 7+.
+* Fixed: Parsing of wordpress.org pages.
+* Fixed: ...basically just made it work again ;)
+* Added: Totals/averages to the stats table.
 
 ### 0.7 ###
 * Release Date: January 15, 2017
