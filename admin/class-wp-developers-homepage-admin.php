@@ -783,7 +783,7 @@ class WP_Developers_Homepage_Admin {
 			$class = '';
 
 			if ( $wp_version ) {
-				if ( version_compare( $item->tested, $wp_version ) >= 0 && 'Plugin' == $plugin_theme->type ) {
+				if ( version_compare( $plugin_theme['tested'], $wp_version ) >= 0 && 'Plugin' == $plugin_theme['type'] ) {
 					$class = 'wdh-current';
 				} else {
 					$class = 'wdh-needs-update';
