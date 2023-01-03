@@ -2,8 +2,8 @@
 **Contributors:** [gregross](https://profiles.wordpress.org/gregross/)  
 **Donate link:** http://wordpress.org/plugins/wp-developers-homepage  
 **Tags:** developers, plugin, theme, unresolved, support, requests, tickets  
-**Requires at least:** 3.5  
-**Tested up to:** 4.7.1  
+**Requires at least:** 5.0  
+**Tested up to:** 6.1.1  
 **Stable tag:** 0.7  
 **License:** GPLv2  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
@@ -52,6 +52,12 @@ Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-
 
 
 ## Changelog ##
+
+### 0.8 ###
+* Release Date: TBD
+* Fixed compatibility with PHP 7+.
+* Fixed parsing of wordpress.org pages.
+* ... basically just made it work again ;)
 
 ### 0.7 ###
 * Release Date: January 15, 2017
