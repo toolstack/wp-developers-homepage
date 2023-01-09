@@ -31,6 +31,15 @@ Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-
 * Set an age limit for the tickets displayed.
 * Set the timeout before new data is loaded.
 * Schedule a WP Cron job to load the data in the background.
+* Shortcode to display both tickets and stats on the frontend.
+
+### Shortcode ###
+
+The shortcode is in the format of `[wp-developers-homepage type=tickets|stats]`.
+
+Type came be either left off (tickets are the default in that case), or be set to either `tickets` or `stats` to display the respective table.
+
+Be aware that the stats table is very wide, so if you have a narrow theme installed it may overflow into a scrolling window.
 
 ## Installation ##
 
@@ -52,6 +61,9 @@ Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-
 
 
 ## Changelog ##
+### 0.9 ###
+* Release Date: TBD
+* Added: Shortcode.
 
 ### 0.8 ###
 * Release Date: Jan 2, 2023
