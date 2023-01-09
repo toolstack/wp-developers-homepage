@@ -2,3 +2,171 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+ .wdh-public-shortcode-container {
+ 	overflow-x: auto;
+ }
+
+ .striped > tbody > :nth-child(odd),
+ul.striped > :nth-child(odd),
+.alternate {
+	background-color: #f6f7f7;
+}
+
+/* .widefat - main style for tables */
+.widefat {
+	border-spacing: 0;
+	width: 100%;
+	clear: both;
+	margin: 0;
+}
+
+.widefat * {
+	word-wrap: break-word;
+}
+
+.widefat a,
+.widefat button.button-link {
+	text-decoration: none;
+}
+
+.widefat td,
+.widefat th {
+	padding: 8px 10px;
+}
+
+.widefat thead th,
+.widefat thead td {
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.widefat tfoot th,
+.widefat tfoot td {
+	border-top: 1px solid #c3c4c7;
+	border-bottom: none;
+}
+
+.widefat .no-items td {
+	border-bottom-width: 0;
+}
+
+.widefat td {
+	vertical-align: top;
+}
+
+.widefat td,
+.widefat td p,
+.widefat td ol,
+.widefat td ul {
+	font-size: 13px;
+	line-height: 1.5em;
+}
+
+.widefat th,
+.widefat thead td,
+.widefat tfoot td {
+	text-align: left;
+	line-height: 1.3em;
+	font-size: 14px;
+}
+
+.widefat th input,
+.updates-table td input,
+.widefat thead td input,
+.widefat tfoot td input {
+	margin: 0 0 0 8px;
+	padding: 0;
+	vertical-align: text-top;
+}
+
+.widefat .check-column {
+	width: 2.2em;
+	padding: 6px 0 25px;
+	vertical-align: top;
+}
+
+.widefat tbody th.check-column {
+	padding: 9px 0 22px;
+}
+
+.widefat thead td.check-column,
+.widefat tbody th.check-column,
+.updates-table tbody td.check-column,
+.widefat tfoot td.check-column {
+	padding: 11px 0 0 3px;
+}
+
+.widefat thead td.check-column,
+.widefat tfoot td.check-column {
+	padding-top: 4px;
+	vertical-align: middle;
+}
+
+.update-php div.updated,
+.update-php div.error {
+	margin-left: 0;
+}
+
+.no-js .widefat thead .check-column input,
+.no-js .widefat tfoot .check-column input {
+	display: none;
+}
+
+.widefat .num,
+.column-comments,
+.column-links,
+.column-posts {
+	text-align: center;
+}
+
+.widefat th#comments {
+	vertical-align: middle;
+}
+
+.widefat thead th,
+.widefat thead td,
+.widefat tfoot th,
+.widefat tfoot td {
+	line-height: 1.4em;
+}
+
+.widefat th,
+.widefat td {
+	color: #50575e;
+}
+
+.widefat th,
+.widefat thead td,
+.widefat tfoot td {
+	font-weight: 400;
+}
+
+.widefat thead tr th,
+.widefat thead tr td,
+.widefat tfoot tr th,
+.widefat tfoot tr td {
+	color: #2c3338;
+}
+
+.widefat td p {
+	margin: 2px 0 0.8em;
+}
+
+.widefat p,
+.widefat ol,
+.widefat ul {
+	color: #2c3338;
+}
+
+.widefat .column-comment p {
+	margin: 0.6em 0;
+}
+
+.widefat .column-comment ul {
+	list-style: initial;
+	margin-left: 2em;
+}
+
+.postbox table.widefat {
+	box-shadow: none;
+}
+

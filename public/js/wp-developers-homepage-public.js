@@ -29,4 +29,14 @@
 	 * be doing this, we should try to minimize doing that in our own work.
 	 */
 
+	$( document ).ready( function() {
+		$( '#wdh_tickets_table' ).tablesorter({ 
+	        sortList: [[4,1]] 
+		    }); 
+
+		$( '.wdh-stats-table' ).tablesorter({ 
+	        sortList: [[0,0]] 
+		    }); 
+    }); 
+
 })( jQuery );

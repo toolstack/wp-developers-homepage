@@ -73,13 +73,13 @@ class WP_Developers_Homepage_Public {
      * @return    WP_Developers_Homepage_Public    A single instance of this class.
      */
     public static function get_instance( $plugin ) {
- 
+
         if ( null == self::$instance ) {
             self::$instance = new self( $plugin );
         }
- 
+
         return self::$instance;
- 
+
     }
 
 	/**
@@ -95,6 +95,8 @@ class WP_Developers_Homepage_Public {
 		$this->plugin_slug = $this->plugin->get( 'slug' );
 		$this->plugin_name = $this->plugin->get( 'name' );
 		$this->version = $this->plugin->get( 'version' );
+
+        	add_shortcode('wp_developers_homepage', array($this, 'render_shortcode'));
 
 	}
 
@@ -118,7 +120,8 @@ class WP_Developers_Homepage_Public {
 		 */
 
 		wp_enqueue_style( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'css/wp-developers-homepage-public.css', array(), $this->version, 'all' );
-
+		wp_enqueue_style( $this->plugin_slug . '-admin', plugin_dir_url( __FILE__ ) . '../admin/css/wp-developers-homepage-admin.css', array(), $this->version, 'all' );
+		wp_enqueue_style( 'jquery-table-sorter', plugin_dir_url( __FILE__ ) . '../admin/css/jquery-table-sorter.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -141,7 +144,38 @@ class WP_Developers_Homepage_Public {
 		 */
 
 		wp_enqueue_script( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'js/wp-developers-homepage-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'jquery-tablesorter', plugin_dir_url( __FILE__ ) . '../admin/js/jquery.tablesorter.min.js', array( 'jquery' ), $this->version, true );
 
+	}
+
+	public function render_shortcode($attr) {
+		// Makes sure we have a valid attr array.
+		if( ! is_array($attr) ) { $attr = array( 'type' => 'tickets' ); }
+		if( is_array( $attr ) && ! array_key_exists('type', $attr) ) { $attr['type'] = 'tickets'; }
+
+		$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
+
+		$content  = '<div class="wdh-public-shortcode-container">' . PHP_EOL;
+		$content .= $plugin_admin->generate_last_data_update() . PHP_EOL;
+
+		switch( $attr['type'] ) {
+			case 'stats':
+				$content .= $plugin_admin->generate_stats_table();
+
+				break;
+			default:
+				$content .= $plugin_admin->generate_tickets_table();
+
+				break;
+		}
+
+		$content .= '<br>' . PHP_EOL;
+		$content .= $plugin_admin->generate_last_data_update() . PHP_EOL;
+
+		$content .= '</div>' . PHP_EOL;
+
+        return $content;
 	}
 
 }

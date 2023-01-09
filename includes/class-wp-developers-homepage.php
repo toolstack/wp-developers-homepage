@@ -230,10 +230,10 @@ class WP_Developers_Homepage {
 	 */
 	private function define_public_hooks() {
 
-		// $plugin_public = WP_Developers_Homepage_Public::get_instance( $this );
+		$plugin_public = WP_Developers_Homepage_Public::get_instance( $this );
 
-		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
 	}
 

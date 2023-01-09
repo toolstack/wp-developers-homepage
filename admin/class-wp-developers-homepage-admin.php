@@ -227,7 +227,7 @@ class WP_Developers_Homepage_Admin {
 	public function enqueue_scripts() {
 
 		wp_enqueue_script( $this->plugin_slug, plugin_dir_url( __FILE__ ) . 'js/wp-developers-homepage-admin.js', array( 'jquery' ), $this->version, true );
-		wp_enqueue_script( 'jquery-tablesorter-js', plugin_dir_url( __FILE__ ) . 'js/jquery.tablesorter.min.js', array( 'jquery' ), $this->version, true );
+		wp_enqueue_script( 'jquery-tablesorter', plugin_dir_url( __FILE__ ) . 'js/jquery.tablesorter.min.js', array( 'jquery' ), $this->version, true );
 
 		wp_localize_script( $this->plugin_slug, "wdhSettings", $this->js_data );
 
@@ -650,11 +650,25 @@ class WP_Developers_Homepage_Admin {
         // Output refresh button.
 		$this->do_refresh_button();
 
-		_e( 'Data last loaded from wordpress.org on: ' );
-		echo date( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $this->last_data_update + $this->tz_offset );
+		echo $this->generate_last_data_update();
 
 		wp_die(); // this is required to terminate immediately and return a proper response
 
+	}
+
+	/**
+	 * Helper function to display the last date/time the data was updated.
+	 *
+	 * @since 0.9.0
+	 */
+	public function generate_last_data_update() {
+
+		$content  = '<p>';
+		$content .= __( 'Data last loaded from wordpress.org on: ' );
+		$content .= date( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $this->last_data_update + $this->tz_offset );
+		$content .= '</p>';
+
+		return $content;
 	}
 
 	/**
