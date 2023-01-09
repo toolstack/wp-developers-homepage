@@ -156,24 +156,22 @@ class WP_Developers_Homepage_Public {
 
 		$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
 
-		$content  = '<div class="wdh-public-shortcode-container">' . PHP_EOL;
-		$content .= $plugin_admin->generate_last_data_update() . PHP_EOL;
-
 		switch( $attr['type'] ) {
 			case 'stats':
-				$content .= $plugin_admin->generate_stats_table();
+				$content = $plugin_admin->generate_stats_table();
 
 				break;
 			default:
-				$content .= $plugin_admin->generate_tickets_table();
+				$content = $plugin_admin->generate_tickets_table();
 
 				break;
 		}
 
-		$content .= '<br>' . PHP_EOL;
-		$content .= $plugin_admin->generate_last_data_update() . PHP_EOL;
+		// We have to run the update *after* we generate the table, otherwise the date is not yet set.
+		$last_update = $plugin_admin->generate_last_data_update() . PHP_EOL;
 
-		$content .= '</div>' . PHP_EOL;
+		// Put everything together now.
+		$content  = '<div class="wdh-public-shortcode-container">' . PHP_EOL . $last_update . $content . '<br>' . PHP_EOL . $last_update . '</div>' . PHP_EOL;
 
         return $content;
 	}
