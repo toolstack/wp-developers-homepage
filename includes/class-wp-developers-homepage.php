@@ -114,7 +114,7 @@ class WP_Developers_Homepage {
 
 		$this->slug = 'wp-developers-homepage';
 		$this->name = __( 'WP Developers Homepage', 'wp-developers-homepage' );
-		$this->version = '0.5.0';
+		$this->version = '0.8.0';
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -250,6 +250,89 @@ class WP_Developers_Homepage {
 
 		// Define actions that are shared by both the public and admin.
 
+		// Skip block registration if Gutenberg is not enabled/merged.
+		if (!function_exists('register_block_type')) {
+			return;
+		}
+
+		$dir = dirname(__FILE__);
+		$block_js = '../block/block.js';
+
+		wp_register_script(
+			'wp-developers-homepage-blocks',
+			plugins_url($block_js, __FILE__),
+			array(
+				'wp-blocks',
+				'wp-i18n',
+				'wp-element',
+				'wp-components',
+				'wp-block-editor',
+				'wp-editor',
+			),
+			$this->version
+		);
+
+		register_block_type('wp-developers-homepage/tickets-block', array(
+			'api_version' => 2,
+			'editor_script' => 'wp-developers-homepage-blocks',
+			'render_callback' => [ $this, 'wp_developers_homepage_tickets_block_handler' ],
+			'attributes' => [
+			]
+		));
+
+		register_block_type('wp-developers-homepage/stats-block', array(
+			'api_version' => 2,
+			'editor_script' => 'wp-developers-homepage-blocks',
+			'render_callback' => [ $this, 'wp_developers_homepage_stats_block_handler' ],
+			'attributes' => [
+			]
+		));
+
+		add_filter( 'block_categories_all', [ $this, 'filter_block_categories_when_post_provided' ], 10, 2 );
+
+	}
+
+	public function filter_block_categories_when_post_provided( $block_categories, $editor_context ) {
+    if ( ! empty( $editor_context->post ) ) {
+        array_push(
+            $block_categories,
+            array(
+                'slug'  => 'wp-developers-homepage',
+                'title' => __( 'WP Developers Homepage', 'custom-plugin' ),
+                'icon'  => '',
+            )
+        );
+    }
+    return $block_categories;
+}
+
+
+	public function wp_developers_homepage_tickets_block_handler( $atts ) {
+		$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
+
+		$content = $plugin_admin->generate_tickets_table();
+
+		// We have to run the update *after* we generate the table, otherwise the date is not yet set.
+		$last_update = $plugin_admin->generate_last_data_update() . PHP_EOL;
+
+		// Put everything together now.
+		$content  = '<div class="wdh-public-shortcode-container">' . PHP_EOL . $last_update . $content . '<br>' . PHP_EOL . $last_update . '</div>' . PHP_EOL;
+
+        return $content;
+	}
+
+	public function wp_developers_homepage_stats_block_handler( $atts ) {
+		$plugin_admin = WP_Developers_Homepage_Admin::get_instance( $this );
+
+		$content = $plugin_admin->generate_stats_table();
+
+		// We have to run the update *after* we generate the table, otherwise the date is not yet set.
+		$last_update = $plugin_admin->generate_last_data_update() . PHP_EOL;
+
+		// Put everything together now.
+		$content  = '<div class="wdh-public-shortcode-container">' . PHP_EOL . $last_update . $content . '<br>' . PHP_EOL . $last_update . '</div>' . PHP_EOL;
+
+        return $content;
 	}
 
 	/**

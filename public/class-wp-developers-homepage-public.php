@@ -96,7 +96,7 @@ class WP_Developers_Homepage_Public {
 		$this->plugin_name = $this->plugin->get( 'name' );
 		$this->version = $this->plugin->get( 'version' );
 
-        	add_shortcode('wp_developers_homepage', array($this, 'render_shortcode'));
+		add_shortcode('wp_developers_homepage', array($this, 'render_shortcode'));
 
 	}
 
