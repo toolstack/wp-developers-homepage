@@ -3,6 +3,7 @@ Contributors: GregRoss
 Donate link: http://wordpress.org/plugins/wp-developers-homepage
 Tags: developers, plugin, theme, unresolved, support, requests, tickets
 Requires at least: 5.0
+Requires PHP: 7.2
 Tested up to: 6.1.1
 Stable tag: 0.8
 License: GPLv2
