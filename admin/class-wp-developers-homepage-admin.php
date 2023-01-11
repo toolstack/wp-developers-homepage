@@ -142,6 +142,24 @@ class WP_Developers_Homepage_Admin {
 	private $error_slugs;
 
 	/**
+	 * The github api instance.
+	 *
+	 * @since    0.9.0
+	 * @access   protected
+	 * @var      WP_Developers_Homepage_Admin    $githubapi    The github api instance.
+	 */
+	private $githubapi;
+
+	/**
+	 * The github authentication token.
+	 *
+	 * @since    0.9.0
+	 * @access   protected
+	 * @var      WP_Developers_Homepage_Admin    $githubtoken    The github authentication token.
+	 */
+	private $githubtoken;
+
+	/**
 	 * The instance of this class.
 	 *
 	 * @since    0.5.0
@@ -195,6 +213,7 @@ class WP_Developers_Homepage_Admin {
 			$this->tz_offset = get_option( 'gmt_offset' ) * 60 * 60;
 		}
 
+		$this->githubapi = new \Github\Client();
 	}
 
 	/**
@@ -345,6 +364,30 @@ class WP_Developers_Homepage_Admin {
 			'main-settings', // Section
 			array( // Args
 				'id' => 'username',
+			)
+		);
+
+		add_settings_field(
+			'githubname', // ID
+			__( 'GitHub username', 'wp-developers-homepage' ), // Title
+			array( $this, 'render_text_input' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'githubname',
+				'description' => __( 'Your GitHub username, note that the public GitHub API has a ratelimit of 60 requests per hour without authentication.', 'wp-developers-homepage' )
+			)
+		);
+
+		add_settings_field(
+			'githubtoken', // ID
+			__( 'GitHub Auth Token', 'wp-developers-homepage' ), // Title
+			array( $this, 'render_text_input' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'githubtoken',
+				'description' => __( sprintf( 'Your GitHub Auth Token (optional).  Warning, this will be stored in the database is clear text, it should be a unique token that has no permissions.  Go to %sGitHub tokens page%s to create one.', '<a target="_blank" href="https://github.com/settings/tokens/?type=beta">', '</a>' ), 'wp-developers-homepage' )
 			)
 		);
 
@@ -687,6 +730,9 @@ class WP_Developers_Homepage_Admin {
 		// Get username to pull plugin data.
 		$username = ! empty( $this->options['username'] ) ? $this->options['username'] : '';
 
+		// Get githubname to pull git tickets.
+		$githubname = ! empty( $this->options['githubname'] ) ? $this->options['githubname'] : '';
+
 		$data = get_option( $this->data_slug, false );
 
 		if ( false === $data ) {
@@ -720,7 +766,7 @@ class WP_Developers_Homepage_Admin {
 
 		if ( $force_refresh || time() > $expiry_time ) {
 
-			$plugins_themes = $this->get_tickets_data( $username, $ticket_type );
+			$plugins_themes = $this->get_tickets_data( $username, $githubname, $ticket_type );
 
 			foreach ( $this->error_slugs as $slug ) {
 				if ( array_key_exists( $slug, $data[ $ticket_type ] ) ) {
@@ -788,9 +834,22 @@ class WP_Developers_Homepage_Admin {
 			}
 		}
 
+		$rating_sum = 0;
+		$installs = 0;
+		$downloads = 0;
+		$unresolved = 0;
+		$resolved = 0;
+		$rating_count = 0;
+
 		foreach( $plugins_themes as $plugin_theme ) {
 			$result .= '<tr>' . PHP_EOL;
-			$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme['slug'] . PHP_EOL, $plugin_theme['name'] );
+
+			if( $this->options['githubname'] ) {
+				$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a></b> <a href="%s" target="_blank">(GitHub)</a>', 'https://wordpress.org/plugins/' . $plugin_theme['slug'], $plugin_theme['name'], 'https://github.com/' . $this->options['githubname'] . '/' . $plugin_theme['slug'] );
+			} else {
+				$result .= sprintf( '<td><b><a href="%s" target="_blank">%s</a><b>', 'https://wordpress.org/plugins/' . $plugin_theme['slug'], $plugin_theme['name'] );
+
+			}
 			$result .= "<td>$plugin_theme[type]</td>" . PHP_EOL;
 			$result .= "<td>$plugin_theme[version]</td>" . PHP_EOL;
 
@@ -858,7 +917,7 @@ class WP_Developers_Homepage_Admin {
 	 *
 	 * @return array $plugins_themes Array of plugins|themes and associated info.
 	 */
-	public function get_tickets_data( $username, $ticket_type = 'plugins' ) {
+	public function get_tickets_data( $username, $githubname, $ticket_type = 'plugins' ) {
 
 		// Get tickets by user.
 		$plugins_themes_by_user = $this->get_plugins_themes_by_user( $username, $ticket_type );
@@ -878,7 +937,7 @@ class WP_Developers_Homepage_Admin {
 			$plugins_themes[ $index ]['unresolved_count'] = 0;
 			$plugins_themes[ $index ]['resolved_count'] = 0;
 
-			$tickets_data = $this->get_unresolved_tickets( $plugins_theme['slug'], $ticket_type );
+			$tickets_data = $this->get_unresolved_tickets( $plugins_theme['slug'], $githubname, $ticket_type );
 
 			if ( ! $tickets_data ) {
 				continue;
@@ -1103,8 +1162,7 @@ class WP_Developers_Homepage_Admin {
 	 *
 	 * @return array Array of all unresolved ticket data.
 	 */
-	public function get_unresolved_tickets( $plugin_theme_slug, $ticket_type = 'plugins' ) {
-
+	public function get_unresolved_tickets( $plugin_theme_slug, $githubname, $ticket_type = 'plugins' ) {
 		$rows_data = array();
 
 		$i = 1;
@@ -1112,6 +1170,8 @@ class WP_Developers_Homepage_Admin {
 			$rows_data = array_merge( $rows_data, $new_rows_data );
 			$i++;
 		}
+
+		$gitissues = $this->get_unresolved_tickets_from_github( $plugin_theme_slug, $githubname, $ticket_type );
 
 		return $rows_data;
 
@@ -1129,6 +1189,9 @@ class WP_Developers_Homepage_Admin {
 	 * @return array Array of ticket data.
 	 */
 	public function get_unresolved_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
+		$age_limit = (int)$this->options['age_limit'];
+
+		$age_limit_time = strtotime( '-' . $age_limit . ' days' );
 
 		$html = $this->get_page_link( $plugin_theme_slug, $page_num, $ticket_type );
 
@@ -1137,7 +1200,6 @@ class WP_Developers_Homepage_Admin {
 
 			return false;
 		}
-
 
 		$client = new HtmlWeb();
 		$dom = $client->load($html);
@@ -1181,6 +1243,11 @@ class WP_Developers_Homepage_Admin {
 
 			$rows_data[] = $row_data;
 
+		}
+
+		// If the first issue we retrieved is older than our age limit, we're done.
+		if( $rows_data[0]['timestamp'] < $age_limit_time ) {
+			return false;
 		}
 
 		return $rows_data;
@@ -1228,6 +1295,70 @@ class WP_Developers_Homepage_Admin {
 
 		return $response;
 
+	}
+
+	public function get_unresolved_tickets_from_github( $plugin_theme_slug, $githubname, $ticket_type ) {
+		$age_limit = (int)$this->options['age_limit'];
+		$age_limit_time = strtotime( '-' . $age_limit . ' days' );
+
+		// If there is no github user set, just return.
+		if( ! array_key_exists( 'githubname', $this->options ) || ( array_key_exists( 'githubname', $this->options ) && $this->options['githubname'] == '' ) ) {
+			return array();
+		}
+
+		// If we have a GitHub Auth Token, use it now.
+		if( array_key_exists( 'githubtoken', $this->options ) && $this->options['githubtoken'] != '' ) {
+			$this->githubapi->authenticate( $this->options['githubtoken'], '', Github\AuthMethod::ACCESS_TOKEN );
+		}
+
+		$page = 1;
+
+		try {
+			$issues = $this->githubapi->api('issue')->all( $githubname, $plugin_theme_slug, array('state' => 'all', 'per_page' => 100, 'page' => $page ) );
+		} catch (Exception $ex) {
+			return array();
+		}
+
+		while( is_array( $issues ) && count( $issues ) > 0 ) {
+			$page++;
+
+			foreach ( $issues as $row ) {
+
+				// Issues from GitHub include pull requests as well, we don't want them so skip this
+				// row if the pull_request key exists.
+				if( array_key_exists( 'pull_request', $row) ) { continue; }
+
+				$row_data['href']           = $row['url'];
+				$row_data['text']           = $row['title'];
+				$row_data['time']           = $row['updated_at'];
+				$row_data['timestamp']      = strtotime( $row['updated_at'] );
+				$row_data['status']         = $row['state'];
+				$row_data['sticky']         = false;
+				$row_data['closed']         = ( $row['state'] == 'closed' ) ? true : false;
+				$row_data['startedby']      = $row['user']['login'];
+				$row_data['startedbyhref']  = 'https://github.com/' . $row['user']['login'];
+				$row_data['lastposter']     = 'Unknown';
+				$row_data['lastposterhref'] = '';
+				$row_data['type']           = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
+				$row_data['slug']           = $plugin_theme_slug;
+
+				$rows_data[] = $row_data;
+
+			}
+
+			// If the last issue we retrieved is still newer than our age limit, keep going, otherwise we're done.
+			if( $row_data['timestamp'] > $age_limit_time ) {
+				try {
+					$issues = $this->githubapi->api('issue')->all( $githubname, $plugin_theme_slug, array('state' => 'all', 'per_page' => 100, 'page' => $page ) );
+				} catch (Exception $ex) {
+					return $rows_data;
+				}
+			} else  {
+				$issues = array();
+			}
+		}
+
+		return $rows_data;
 	}
 
 	public function set_wp_cron() {

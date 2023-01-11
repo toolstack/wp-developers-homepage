@@ -32,6 +32,25 @@ Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-
 * Set the timeout before new data is loaded.
 * Schedule a WP Cron job to load the data in the background.
 * Shortcode to display both tickets and stats on the frontend.
+* Optionally includes tickets from GitHub.
+
+= GitHub Support =
+
+Host your plugins on GitHub?  WP Developers Homepage can pull your ticket information from there too!
+
+Simply add your GitHub username to the WP Developers Homepage settings.
+
+Note: Your GitHub repos for your themes/plugins must match your slug.  So for example, this plugin's slug is wp-developers-homepage, so the GitHub url for it's repo is [https://github.com/toolstack/wp-developers-homepage](https://github.com/toolstack/wp-developers-homepage).
+
+WP Developers Homepage uses the GitHub API to retrieve the ticket information, which by default has a limit of 60 request/hour for unauthenticated users.  Each plugin/theme you have will generate at least one request, and if you have a significant number of tickets (over 100) it will generate 1 request/repo/100 items.
+
+So if you have 5 plugins, with 150 tickets per plugin, you'll generate 10 requests (2 per plugin).
+
+If you need more than 60 requests/hour, you can [create an access token](https://github.com/settings/tokens/?type=beta) that will increase this limit.  The token should be limited to the plugin/theme repos you have and should have no permission assigned to it.  *DO NOT* reuse an existing token that you have assigned permissions to.
+
+*Warning*: The access token will be stored in plain text inside of the WordPress database!
+
+Once you have the token, go to the WP Developers Homepage settings and save it.
 
 = Shortcode =
 
@@ -45,8 +64,13 @@ Be aware that the stats table is very wide, so if you have a narrow theme instal
 
 1. Install the plugin from the wordpress.org plugin directory.
 2. Go to Settings->WP Developers Homepage in the WP admin menu.
-3. Got to the settings in WordPress settings menu and configure your options.
-4. Go to the WP Developers Homepage in the WP admin menu.
+3. Go to the WP Developers Homepage in the WP admin menu.
+
+== Frequently Asked Questions ==
+
+= Why don't my ticket totals match those on WordPress/GitHub =
+
+If you've enabled an age limit, only those tickets newer will be retrieved an counted.  This is done to limit the number of request going to WordPress/GitHub.
 
 == Screenshots ==
 
@@ -58,6 +82,8 @@ Be aware that the stats table is very wide, so if you have a narrow theme instal
 = 0.9 =
 * Release Date: TBD
 * Added: Shortcode.
+* Added: GitHub support.
+* Fixed: Setting an age limit for tickets no longer retrieves tickets older than that age limit instead of just not displaying them.
 
 = 0.8 =
 * Release Date: Jan 2, 2023
