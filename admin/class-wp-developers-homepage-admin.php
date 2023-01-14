@@ -655,8 +655,15 @@ class WP_Developers_Homepage_Admin {
 
 			$icon_html = sprintf( '<span class="dashicons dashicons-%s" title="%s"></span> ', $icon_class, ucfirst( $ticket_data['status'] ) );
 
+			// Generate closed icon.
+			if ( true == $ticket_data['closed'] ) {
+				$closed_icon_html = sprintf( '<span class="dashicons dashicons-lock" title="%s"></span> ', __( 'Locked', 'wp-developers-homepage' ) );
+			} else {
+				$closed_icon_html = '';
+			}
+
 			$result .= '<tr>' . PHP_EOL;
-			$result .= '<td>' . $icon_html . '</td>' . PHP_EOL;
+			$result .= '<td>' . $icon_html . $closed_icon_html . '</td>' . PHP_EOL;
 			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', $ticket_data['href'], $ticket_data['text'], PHP_EOL );
 			$result .= sprintf( '<td><a href="%s" target="_blank">%s</a></td>%s', "https://wordpress.org/plugins/" . $ticket_data['slug'], $plugin_theme_names[$ticket_data['slug']], PHP_EOL );
 			$result .= '<td>' . $plugin_theme['type'] . '</td>' . PHP_EOL;
