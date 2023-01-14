@@ -452,6 +452,18 @@ class WP_Developers_Homepage_Admin {
 		);
 
 		add_settings_field(
+			'retrieve_all_tickets', // ID
+			__( 'Retrieve all tickets', 'wp-developers-homepage' ), // Title
+			array( $this, 'render_checkbox' ), // Callback
+			$this->plugin_slug, // Page
+			'main-settings', // Section
+			array( // Args
+				'id' => 'retrieve_all_tickets',
+				'description' => __( 'Retrieve all tickets, by default only active tickets are retrieved from wordpress.org to save on processing/data (data reload required to take effect), however this means the statistics page for resolved/unresolved is incorrect as it reflects only active tickets.  Likewise, if you select "Show all tickets" above, without enabling this option you will only see the active tickets and not all tickets for the plugins/themes.', 'wp-developers-homepage' ),
+			)
+		);
+
+		add_settings_field(
 			'refresh_timeout', // ID
 			__( 'Hours before refresh', 'wp-developers-homepage' ), // Title
 			array( $this, 'render_text_input' ), // Callback
@@ -602,8 +614,12 @@ class WP_Developers_Homepage_Admin {
 		$plugin_theme_names = array();
 
 		$age_limit = ( empty( $this->options['age_limit'] ) ) ? 0 : (int)$this->options['age_limit'];
-		$ctime = time();
-		$age_limit_time = strtotime( "{$age_limit} days ago", $ctime );
+
+		if( $age_limit == 0 ) {
+			$age_limit_time = 0;
+		} else {
+			$age_limit_time = strtotime( '-' . $age_limit . ' days' );
+		}
 
 		foreach( $plugins_themes as $plugin_theme ) {
 			// Skip if there are no tickets.
@@ -613,7 +629,6 @@ class WP_Developers_Homepage_Admin {
 
 			$plugin_theme_names[$plugin_theme['slug']] = $plugin_theme['name'];
 			$tickets_data = array_merge( $tickets_data, $plugin_theme['tickets_data'] );
-
 		}
 
 		uasort( $tickets_data, function( $plugin_1, $plugin_2 ) {
@@ -1191,27 +1206,31 @@ class WP_Developers_Homepage_Admin {
 	public function get_unresolved_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
 		$age_limit = (int)$this->options['age_limit'];
 
-		$age_limit_time = strtotime( '-' . $age_limit . ' days' );
+		if( $age_limit == 0 ) {
+			$age_limit_time = 0;
+		} else {
+			$age_limit_time = strtotime( '-' . $age_limit . ' days' );
+		}
 
 		$html = $this->get_page_link( $plugin_theme_slug, $page_num, $ticket_type );
 
-		if( is_wp_error( $html ) ) {
+		if( $html === false ) {
 			$this->error_slugs[ $plugin_theme_slug ] = $plugin_theme_slug;
 
 			return false;
 		}
 
 		$client = new HtmlWeb();
-		$dom = $client->load($html);
+		$dom = $client->load( $html );
 
 		$table = $dom->find( 'li.bbp-body', 0 );
 
-		if( is_null($table)) {
+		if( is_null( $table ) ) {
 			return false;
 		}
 
 		// Returns the page title
-		$rows = $table->find('ul.topic', 0);
+		$rows = $table->find( 'ul.topic', 0 );
 		$rows_data = array();
 
 		foreach ( $table->find('ul.topic') as $row ) {
@@ -1260,13 +1279,10 @@ class WP_Developers_Homepage_Admin {
 			return false;
 		}
 
-		if ( 'plugins' == $ticket_type ) {
-			$remote_url = "https://wordpress.org/support/plugin/{$plugin_theme_slug}/active/page/{$page_num}";
-		} else {
-			$remote_url = "https://wordpress.org/support/theme/{$plugin_theme_slug}/active/page/{$page_num}";
-		}
+		if( array_key_exists( 'retrieve_all_tickets', $this->options ) && $this->options['retrieve_all_tickets'] ) { $active = ''; } else { $active = 'active/'; }
+		if( 'plugins' == $ticket_type ) { $type = 'plugin'; } else { $type = 'theme'; }
 
-		return $remote_url;
+		return "https://wordpress.org/support/{$type}/{$plugin_theme_slug}/{$active}page/{$page_num}";
 
 	}
 
@@ -1276,11 +1292,7 @@ class WP_Developers_Homepage_Admin {
 			return false;
 		}
 
-		if ( 'plugins' == $ticket_type ) {
-			$remote_url = "https://wordpress.org/support/plugin/{$plugin_theme_slug}/active/page/{$page_num}";
-		} else {
-			$remote_url = "https://wordpress.org/support/theme/{$plugin_theme_slug}/active/page/{$page_num}";
-		}
+		$remote_url = $this->get_page_link( $plugin_theme_slug, $page_num, $ticket_type );
 
 		$response = wp_remote_get( $remote_url );
 
@@ -1299,7 +1311,12 @@ class WP_Developers_Homepage_Admin {
 
 	public function get_unresolved_tickets_from_github( $plugin_theme_slug, $githubname, $ticket_type ) {
 		$age_limit = (int)$this->options['age_limit'];
-		$age_limit_time = strtotime( '-' . $age_limit . ' days' );
+
+		if( $age_limit == 0 ) {
+			$age_limit_time = 0;
+		} else {
+			$age_limit_time = strtotime( '-' . $age_limit . ' days' );
+		}
 
 		// If there is no github user set, just return.
 		if( ! array_key_exists( 'githubname', $this->options ) || ( array_key_exists( 'githubname', $this->options ) && $this->options['githubname'] == '' ) ) {
@@ -1318,6 +1335,8 @@ class WP_Developers_Homepage_Admin {
 		} catch (Exception $ex) {
 			return array();
 		}
+
+		$rows_data = array();
 
 		while( is_array( $issues ) && count( $issues ) > 0 ) {
 			$page++;
@@ -1343,7 +1362,6 @@ class WP_Developers_Homepage_Admin {
 				$row_data['slug']           = $plugin_theme_slug;
 
 				$rows_data[] = $row_data;
-
 			}
 
 			// If the last issue we retrieved is still newer than our age limit, keep going, otherwise we're done.
