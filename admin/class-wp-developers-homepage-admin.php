@@ -361,6 +361,7 @@ class WP_Developers_Homepage_Admin {
 			'main-settings', // Section
 			array( // Args
 				'id' => 'username',
+				'description' => 'Your WordPress.org username.'
 			)
 		);
 
@@ -527,13 +528,13 @@ class WP_Developers_Homepage_Admin {
 		$option_value = ! empty( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : $default;
 		printf(
             '%s<input type="text" value="%s" id="%s" name="%s" class="regular-text %s"/><br /><p class="description" for="%s">%s</p>',
-            ! empty( $args['sub_heading'] ) ? '<b>' . $args['sub_heading'] . '</b><br />' : '',
-            $option_value,
-            $args['id'],
+            ! empty( $args['sub_heading'] ) ? '<b>' . esc_html( $args['sub_heading'] ) . '</b><br />' : '',
+            esc_attr( $option_value ),
+            esc_attr( $args['id'] ),
+            esc_attr( $option_name ),
+            ! empty( $args['class'] ) ? esc_attr( $args['class'] ) : '',
             $option_name,
-            ! empty( $args['class'] ) ? $args['class'] : '',
-            $option_name,
-            ! empty( $args['description'] ) ? $args['description'] : ''
+            ! empty( $args['description'] ) ? esc_attr( $args['description'] ) : ''
         );
 
 	}
@@ -549,14 +550,13 @@ class WP_Developers_Homepage_Admin {
 
 		$option_name = $this->plugin_slug . '[' . $args['id'] . ']';
 		$option_value = ! empty( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : '';
-		printf(
-            '<input type="checkbox" value="1" id="%s" name="%s" %s/><p class="description" for="%s">%s</p>',
-            $option_name,
-            $option_name,
-            checked( 1, $option_value, false ),
-            $option_name,
-            ! empty( $args['description'] ) ? $args['description'] : ''
-        );
+		$desc = ! empty( $args['description'] ) ? $args['description'] : '';
+
+		echo '<label class="wpdh-switch">' . PHP_EOL;
+		echo '<input type="checkbox" value="1" id="' . esc_attr( $option_name ) . '" name="' . esc_attr( $option_name )  . '" ' . checked( 1, $option_value, false ) . '>' . PHP_EOL;
+		echo '<span class="wpdh-slider wpdh-round"></span>' . PHP_EOL;
+		echo '</label>' . PHP_EOL;
+		echo '<p>' . esc_html( $desc ) . '</p>';
 
 	}
 
