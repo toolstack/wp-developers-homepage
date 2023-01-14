@@ -73,6 +73,23 @@ Be aware that the stats table is very wide, so if you have a narrow theme instal
 
 If you've enabled an age limit, only those tickets newer will be retrieved an counted.  This is done to limit the number of request going to WordPress/GitHub.
 
+= Why is "Retrieve all tickets" disabled by default? =
+
+If you have a lot of old tickets, or many plugins/themes, it takes quite a bit of processing and data to get *all* of the tickets.  Instead, by default, only *active* tickets are retrieved.
+
+= Why are the Unresolved/Resolved counts on the statistics table incorrect? =
+
+The statistics table values for Unresolved/Resolved are calculated based upon the data stored by WP Developers Homepage, and so two options can limit what is retrieved from wordpress.org:
+
+1. Retrieve all tickets, which is disabled by default.
+2. Age limit
+
+These options tell WP Developers Homepage to stop retrieving data based upon either status or age of the tickets.  As inactive/old tickets are therefore not stored, they are not reflected in the statistics table.
+
+If you wish to see a true representation of all your tickets, set the age limit to 0, and enabled the retrieve all tickets options.
+
+This will significantly increase the time taken to download new data from wordpress.org.
+
 == Screenshots ==
 
 1. Support tickets for plugins/themes.
@@ -80,10 +97,11 @@ If you've enabled an age limit, only those tickets newer will be retrieved an co
 3. Settings page.
 
 == Changelog ==
-= 0.9 =
+= 1.0 =
 * Release Date: TBD
 * Added: Shortcode.
 * Added: GitHub support.
+* Added: Option to retrieve all tickets from wordpress.org
 * Fixed: Setting an age limit for tickets no longer retrieves tickets older than that age limit instead of just not displaying them.
 
 = 0.8 =
