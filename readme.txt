@@ -98,7 +98,7 @@ This will significantly increase the time taken to download new data from wordpr
 
 == Changelog ==
 = 1.0 =
-* Release Date: TBD
+* Release Date: Jan 14, 2023
 * Added: Shortcode/Gutenberg Blocks.
 * Added: GitHub support.
 * Added: Option to retrieve all tickets from wordpress.org
