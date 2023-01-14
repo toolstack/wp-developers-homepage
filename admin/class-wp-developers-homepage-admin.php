@@ -200,10 +200,7 @@ class WP_Developers_Homepage_Admin {
 		$this->error_slugs = array();
 		$this->js_data = array(
 			'fetch_messages' => array(
-				__( 'Fetching data, thanks for your patience. . .', 'wp-developers-homepage' ),
-				__( 'Fetching data, this can take a bit. . .', 'wp-developers-homepage' ),
-				__( 'Fetching data, patience is a virtue. . .', 'wp-developers-homepage' ),
-				__( 'Fetching data, 3. . . 2. . . 1. . .', 'wp-developers-homepage' ),
+				__( 'Fetching ticket and statistical data...', 'wp-developers-homepage' ),
 			),
 		);
 
