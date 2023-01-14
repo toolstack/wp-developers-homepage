@@ -5,7 +5,7 @@ Tags: developers, plugin, theme, unresolved, support, requests, tickets
 Requires at least: 5.0
 Requires PHP: 7.2
 Tested up to: 6.1.1
-Stable tag: 0.8
+Stable tag: 1.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,7 +32,7 @@ Based on Mickey Kay's great [WP Dev Dashboard](https://wordpress.org/plugins/wp-
 * Set an age limit for the tickets displayed.
 * Set the timeout before new data is loaded.
 * Schedule a WP Cron job to load the data in the background.
-* Shortcode to display both tickets and stats on the frontend.
+* Shortcode/Gutenberg Block to display both tickets and stats on the frontend.
 * Optionally includes tickets from GitHub.
 
 = GitHub Support =
@@ -99,7 +99,7 @@ This will significantly increase the time taken to download new data from wordpr
 == Changelog ==
 = 1.0 =
 * Release Date: TBD
-* Added: Shortcode.
+* Added: Shortcode/Gutenberg Blocks.
 * Added: GitHub support.
 * Added: Option to retrieve all tickets from wordpress.org
 * Fixed: Setting an age limit for tickets no longer retrieves tickets older than that age limit instead of just not displaying them.
