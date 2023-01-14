@@ -1264,8 +1264,10 @@ class WP_Developers_Homepage_Admin {
 			$row_data['type']           = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
 			$row_data['slug']           = $plugin_theme_slug;
 
-			$rows_data[] = $row_data;
-
+			// Discard any tickets older than our desired age limit.
+			if( $row_data['timestamp'] >= $age_limit_time ) {
+				$rows_data[] = $row_data;
+			}
 		}
 
 		// If the first issue we retrieved is older than our age limit, we're done.
@@ -1365,7 +1367,10 @@ class WP_Developers_Homepage_Admin {
 				$row_data['type']           = ( 'plugins' == $ticket_type ) ? 'Plugin' : 'Theme';
 				$row_data['slug']           = $plugin_theme_slug;
 
-				$rows_data[] = $row_data;
+				// Discard any tickets older than our desired age limit.
+				if( $row_data['timestamp'] >= $age_limit_time ) {
+					$rows_data[] = $row_data;
+				}
 			}
 
 			// If the last issue we retrieved is still newer than our age limit, keep going, otherwise we're done.
