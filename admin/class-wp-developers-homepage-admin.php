@@ -534,7 +534,7 @@ class WP_Developers_Homepage_Admin {
             esc_attr( $option_name ),
             ! empty( $args['class'] ) ? esc_attr( $args['class'] ) : '',
             $option_name,
-            ! empty( $args['description'] ) ? esc_attr( $args['description'] ) : ''
+            ! empty( $args['description'] ) ? $args['description'] : ''
         );
 
 	}
@@ -556,7 +556,7 @@ class WP_Developers_Homepage_Admin {
 		echo '<input type="checkbox" value="1" id="' . esc_attr( $option_name ) . '" name="' . esc_attr( $option_name )  . '" ' . checked( 1, $option_value, false ) . '>' . PHP_EOL;
 		echo '<span class="wpdh-slider wpdh-round"></span>' . PHP_EOL;
 		echo '</label>' . PHP_EOL;
-		echo '<p>' . esc_html( $desc ) . '</p>';
+		echo '<p>' . $desc . '</p>';
 
 	}
 
