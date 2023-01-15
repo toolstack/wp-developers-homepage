@@ -5,7 +5,7 @@
 **Requires at least:** 5.0  
 **Requires PHP:** 7.2  
 **Tested up to:** 6.1.1  
-**Stable tag:** 1.0  
+**Stable tag:** 1.1  
 **License:** GPLv2  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -103,6 +103,10 @@ This will significantly increase the time taken to download new data from wordpr
 
 
 ## Changelog ##
+### 1.0 ###
+* Release Date: Jan 15, 2023
+* Fixed: Force composer to assume php 7.2.5 for better compatibility.
+
 ### 1.0 ###
 * Release Date: Jan 14, 2023
 * Added: Shortcode/Gutenberg Blocks.
