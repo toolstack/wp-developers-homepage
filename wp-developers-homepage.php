@@ -16,7 +16,7 @@
  * Plugin Name:       WP Developers Homepage
  * Plugin URI:        http://wordpress.org/plugins/wp-developers-homepage
  * Description:       Easily see all of your unresolved plugin & theme support requests.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Greg Ross
  * Author URI:        http://toolstackc.com/
  * License:           GPL-2.0+
@@ -37,7 +37,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'WPDH_VERSION', '1.0.0' );
+define( 'WPDH_VERSION', '1.1.0' );
 
 /**
  * The code that runs during plugin activation.
