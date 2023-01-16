@@ -250,27 +250,18 @@ class WP_Developers_Homepage {
 
 		// Define actions that are shared by both the public and admin.
 
+		// Load shared scripts/styles.
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_shared, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_shared, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_shared, 'enqueue_styles' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_shared, 'enqueue_scripts' );
+
+		// Register our Gutenberg blocks.
+
 		// Skip block registration if Gutenberg is not enabled/merged.
 		if (!function_exists('register_block_type')) {
 			return;
 		}
-
-		$dir = dirname(__FILE__);
-		$block_js = '../block/block.js';
-
-		wp_register_script(
-			'wp-developers-homepage-blocks',
-			plugins_url($block_js, __FILE__),
-			array(
-				'wp-blocks',
-				'wp-i18n',
-				'wp-element',
-				'wp-components',
-				'wp-block-editor',
-				'wp-editor',
-			),
-			$this->version
-		);
 
 		register_block_type('wp-developers-homepage/tickets-block', array(
 			'api_version' => 2,
@@ -289,6 +280,31 @@ class WP_Developers_Homepage {
 		));
 
 		add_filter( 'block_categories_all', [ $this, 'filter_block_categories_when_post_provided' ], 10, 2 );
+
+	}
+
+	public function enqueue_styles() {
+
+	}
+
+	public function enqueue_scripts() {
+		// Register our block javascript.
+		$block_js = '../block/block.js';
+
+		wp_register_script(
+			'wp-developers-homepage-blocks',
+			plugins_url($block_js, __FILE__),
+			array(
+				'wp-blocks',
+				'wp-i18n',
+				'wp-element',
+				'wp-components',
+				'wp-block-editor',
+				'wp-editor',
+			),
+			$this->version
+		);
+
 
 	}
 
