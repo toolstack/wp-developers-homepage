@@ -1206,7 +1206,7 @@ class WP_Developers_Homepage_Admin {
 	 *
 	 * @return array Array of ticket data.
 	 */
-	public function get_unresolved_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num ) {
+	public function get_unresolved_tickets_for_page( $plugin_theme_slug, $ticket_type = 'plugins', $page_num = 1 ) {
 		$age_limit = (int)$this->options['age_limit'];
 
 		if( $age_limit == 0 ) {
