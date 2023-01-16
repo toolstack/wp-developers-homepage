@@ -288,7 +288,6 @@ class WP_Developers_Homepage_Admin {
 		$this->set_wp_cron();
 
 		?>
-		<?php screen_icon(); ?>
         <div id="<?php echo "{$this->plugin_slug}-settings"; ?>" class="wrap">
 	        <h1><?php echo $this->plugin_name; ?></h1><br />
 			<div id="poststuff">
